@@ -11,7 +11,7 @@ class Memory:
     def add(self, experience):
         raise NotImplementedError()
 
-    def sample(self):
+    def sample(self, n):
         raise NotImplementedError()
 
 
@@ -38,9 +38,9 @@ class ReplayBuffer(Memory):
         state, action, reward, next_state, done = experience
         self.memory.append((state, action, reward, next_state, done))
 
-    def sample(self):
+    def sample(self, n):
         """Randomly sample a batch of experiences from memory."""
-        experiences = self.random.sample(self.memory, k=self.batch_size)
+        experiences = self.random.sample(self.memory, k=n)
 
         states, actions, rewards, next_states, dones = zip(*experiences)
 
