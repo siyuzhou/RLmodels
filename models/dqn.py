@@ -5,18 +5,18 @@ from .memory import ReplayBuffer
 
 
 class DQNAgent:
-    EPSILON_MIN = 0.03
+    EPSILON_MIN = 0.01
     EPSILON_MAX = 1
-    EPSILON_DECAY = 500
+    EPSILON_DECAY = 0.995
     GAMMA = 0.99
-    BUFFER_SIZE = int(1e5)
+    BUFFER_SIZE = int(1e6)
     LEARNING_RATE = 1e-3
     BATCH_SIZE = 32
 
     def __init__(self, state_shape, hidden_layers, action_size, seed=None):
         if not hidden_layers:
             raise ValueError('hidden_layers cannot be empty')
-
+        self.epsilon = self.EPSILON_MAX
         self.memory = ReplayBuffer(self.BUFFER_SIZE, seed)
 
         self.dqn = keras.models.Sequential()
@@ -26,10 +26,6 @@ class DQNAgent:
         self.action_size = action_size
         self.random = np.random.RandomState(seed)
         self.global_step = 0
-
-    @property
-    def epsilon(self):
-        return self.EPSILON_MIN + (self.EPSILON_MAX - self.EPSILON_MIN) * np.exp(- self.global_step/self.EPSILON_DECAY)
 
     def _build_dqn(self, state_shape, hidden_layers, action_size):
         self.dqn.add(keras.layers.Dense(
@@ -54,6 +50,7 @@ class DQNAgent:
             self.learn(self.BATCH_SIZE)
 
         self.global_step += 1
+        self.epsilon = max(self.epsilon * self.EPSILON_DECAY, self.EPSILON_MIN)
 
     def _sample(self, n):
         states, actions, rewards, next_states, dones = self.memory.sample(n)

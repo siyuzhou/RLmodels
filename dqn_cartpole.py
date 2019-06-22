@@ -9,7 +9,7 @@ def main():
     env = gym.make(env_id)
 
     dqn_agent = models.DQNAgent(env.observation_space.shape,
-                                [128, 128, 128],
+                                [32, 32],
                                 env.action_space.n)
 
     all_rewards = []
