@@ -8,8 +8,8 @@ class DQNAgent:
     EPSILON_MIN = 0.01
     EPSILON_MAX = 1
     EPSILON_DECAY = 0.995
-    GAMMA = 0.99
-    BUFFER_SIZE = int(1e6)
+    GAMMA = 0.95
+    BUFFER_SIZE = int(2000)
     LEARNING_RATE = 1e-3
     BATCH_SIZE = 32
 
@@ -69,8 +69,7 @@ class DQNAgent:
         expected_q = rewards + self.GAMMA * q_values_next * (1 - dones)
 
         with tf.GradientTape() as tape:
-            q_values = tf.gather(self.dqn(states), actions)
-
+            q_values = tf.batch_gather(self.dqn(states), np.vstack(actions))
             loss = keras.losses.mse(expected_q, q_values)
 
         grads = tape.gradient(loss, self.dqn.trainable_variables)
