@@ -40,7 +40,10 @@ class ReplayBuffer(Memory):
 
     def sample(self, n):
         """Randomly sample a batch of experiences from memory."""
-        experiences = self.random.sample(self.memory, k=n)
+        if len(self.memory) < n:
+            experiences = self.memory
+        else:
+            experiences = self.random.sample(self.memory, k=n)
 
         states, actions, rewards, next_states, dones = zip(*experiences)
 

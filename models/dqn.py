@@ -3,6 +3,8 @@ import tensorflow as tf
 from tensorflow import keras
 from .memory import ReplayBuffer
 
+tf.enable_eager_execution()
+
 
 class DQNAgent:
     EPSILON_MIN = 0.01
@@ -19,21 +21,21 @@ class DQNAgent:
         self.epsilon = self.EPSILON_MAX
         self.memory = ReplayBuffer(self.BUFFER_SIZE, seed)
 
-        self.dqn = keras.models.Sequential()
-        self._build_dqn(state_shape, hidden_layers, action_size)
+        self.dqn = self._build_dqn(state_shape, hidden_layers, action_size)
         self.optimizer = tf.train.AdamOptimizer()
 
         self.action_size = action_size
         self.random = np.random.RandomState(seed)
-        self.global_step = 0
 
     def _build_dqn(self, state_shape, hidden_layers, action_size):
-        self.dqn.add(keras.layers.Dense(
+        model = keras.models.Sequential()
+        model.add(keras.layers.Dense(
             hidden_layers[0], input_shape=state_shape, activation='relu'))
         for units in hidden_layers[1:]:
-            self.dqn.add(keras.layers.Dense(units, activation='relu'))
+            model.add(keras.layers.Dense(units, activation='relu'))
+        model.add(keras.layers.Dense(action_size))
 
-        self.dqn.add(keras.layers.Dense(action_size))
+        return model
 
     def act(self, state):
         if self.random.rand() > self.epsilon:
@@ -47,9 +49,9 @@ class DQNAgent:
         self.memory.add((state, action, reward, next_state, done))
 
         if len(self.memory) > self.BATCH_SIZE:
-            self.learn(self.BATCH_SIZE)
+            experiences = self._sample(self.BATCH_SIZE)
+            self.learn(experiences)
 
-        self.global_step += 1
         self.epsilon = max(self.epsilon * self.EPSILON_DECAY, self.EPSILON_MIN)
 
     def _sample(self, n):
@@ -62,8 +64,8 @@ class DQNAgent:
 
         return states, actions, rewards, next_states, dones
 
-    def learn(self, batch_size):
-        states, actions, rewards, next_states, dones = self._sample(batch_size)
+    def learn(self, experiences):
+        states, actions, rewards, next_states, dones = experiences
 
         q_values_next = tf.reduce_max(self.dqn(next_states), axis=1, keepdims=True)
         expected_q = rewards + self.GAMMA * q_values_next * (1 - dones)
