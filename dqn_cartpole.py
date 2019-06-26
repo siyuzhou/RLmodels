@@ -21,11 +21,12 @@ def main():
         done = False
         while not done:
             env.render()
+
             action = dqn_agent.act(state)
             next_state, reward, done, _ = env.step(action)
-
             dqn_agent.step(state, action, reward, next_state, done)
 
+            state = next_state
             episode_reward += reward
 
         all_rewards.append(episode_reward)
