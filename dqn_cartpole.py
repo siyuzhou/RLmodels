@@ -8,9 +8,9 @@ def main():
     env_id = "CartPole-v0"
     env = gym.make(env_id)
 
-    dqn_agent = models.DQNAgent(env.observation_space.shape,
-                                [32, 32],
-                                env.action_space.n)
+    dqn_agent = models.DDQNAgent(env.observation_space.shape,
+                                 [32, 32],
+                                 env.action_space.n)
 
     all_rewards = []
 

@@ -1,1 +1,1 @@
-from .dqn import DQNAgent
+from .dqn import DQNAgent, DDQNAgent

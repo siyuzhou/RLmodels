@@ -76,3 +76,30 @@ class DQNAgent:
 
         grads = tape.gradient(loss, self.dqn.trainable_variables)
         self.optimizer.apply_gradients(zip(grads, self.dqn.trainable_variables))
+
+
+class DDQNAgent(DQNAgent):
+    def __init__(self, state_shape, hidden_layers, action_size, seed=None):
+        super().__init__(state_shape, hidden_layers, action_size, seed)
+
+        self.target_dqn = self._build_dqn(state_shape, hidden_layers, action_size)
+
+    def learn(self, experiences):
+        states, actions, rewards, next_states, dones = experiences
+
+        q_values_next = tf.reduce_max(self.target_dqn(next_states), axis=1, keepdims=True)
+        expected_q = rewards + self.GAMMA * q_values_next * (1 - dones)
+
+        with tf.GradientTape() as tape:
+            q_values = tf.batch_gather(self.dqn(states), np.vstack(actions))
+            loss = keras.losses.mse(expected_q, q_values)
+
+        grads = tape.gradient(loss, self.dqn.trainable_variables)
+        self.optimizer.apply_gradients(zip(grads, self.dqn.trainable_variables))
+
+        self._update_target(0.1)
+
+    def _update_target(self, alpha):
+        new_weights = [(1 - alpha) * target_weights + alpha * local_weights
+                       for target_weights, local_weights in zip(self.target_dqn.get_weights(), self.dqn.get_weights())]
+        self.target_dqn.set_weights(new_weights)
