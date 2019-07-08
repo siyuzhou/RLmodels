@@ -4,13 +4,25 @@ import numpy as np
 import models
 
 
+CONFIG = {
+    'EPSILON_MIN': 0.01,
+    'EPSILON_MAX': 1,
+    'EPSILON_DECAY': 0.995,
+    'GAMMA': 0.95,
+    'BUFFER_SIZE': int(2000),
+    'LEARNING_RATE': 1e-3,
+    'BATCH_SIZE': 32
+}
+
+
 def main():
     env_id = "CartPole-v0"
     env = gym.make(env_id)
 
     dqn_agent = models.DDQNAgent(env.observation_space.shape,
                                  [32, 32],
-                                 env.action_space.n)
+                                 env.action_space.n,
+                                 CONFIG)
 
     all_rewards = []
 

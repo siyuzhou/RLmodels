@@ -7,19 +7,13 @@ tf.enable_eager_execution()
 
 
 class DQNAgent:
-    EPSILON_MIN = 0.01
-    EPSILON_MAX = 1
-    EPSILON_DECAY = 0.995
-    GAMMA = 0.95
-    BUFFER_SIZE = int(2000)
-    LEARNING_RATE = 1e-3
-    BATCH_SIZE = 32
-
-    def __init__(self, state_shape, hidden_layers, action_size, seed=None):
+    def __init__(self, state_shape, hidden_layers, action_size, config, seed=None):
         if not hidden_layers:
             raise ValueError('hidden_layers cannot be empty')
-        self.epsilon = self.EPSILON_MAX
-        self.memory = ReplayBuffer(self.BUFFER_SIZE, seed)
+
+        self.config = config
+        self.epsilon = self.config['EPSILON_MAX']
+        self.memory = ReplayBuffer(self.config['BUFFER_SIZE'], seed)
 
         self.dqn = self._build_dqn(state_shape, hidden_layers, action_size)
         self.optimizer = tf.train.AdamOptimizer()
@@ -48,11 +42,11 @@ class DQNAgent:
     def step(self, state, action, reward, next_state, done):
         self.memory.add((state, action, reward, next_state, done))
 
-        if len(self.memory) > self.BATCH_SIZE:
-            experiences = self._sample(self.BATCH_SIZE)
+        if len(self.memory) > self.config['BATCH_SIZE']:
+            experiences = self._sample(self.config['BATCH_SIZE'])
             self.learn(experiences)
 
-        self.epsilon = max(self.epsilon * self.EPSILON_DECAY, self.EPSILON_MIN)
+        self.epsilon = max(self.epsilon * self.config['EPSILON_DECAY'], self.config['EPSILON_MIN'])
 
     def _sample(self, n):
         states, actions, rewards, next_states, dones = self.memory.sample(n)
@@ -68,7 +62,7 @@ class DQNAgent:
         states, actions, rewards, next_states, dones = experiences
 
         q_values_next = tf.reduce_max(self.dqn(next_states), axis=1, keepdims=True)
-        expected_q = rewards + self.GAMMA * q_values_next * (1 - dones)
+        expected_q = rewards + self.config['GAMMA'] * q_values_next * (1 - dones)
 
         with tf.GradientTape() as tape:
             q_values = tf.batch_gather(self.dqn(states), np.vstack(actions))
@@ -79,8 +73,8 @@ class DQNAgent:
 
 
 class DDQNAgent(DQNAgent):
-    def __init__(self, state_shape, hidden_layers, action_size, seed=None):
-        super().__init__(state_shape, hidden_layers, action_size, seed)
+    def __init__(self, state_shape, hidden_layers, action_size, config, seed=None):
+        super().__init__(state_shape, hidden_layers, action_size, config, seed)
 
         self.target_dqn = self._build_dqn(state_shape, hidden_layers, action_size)
 
@@ -88,7 +82,7 @@ class DDQNAgent(DQNAgent):
         states, actions, rewards, next_states, dones = experiences
 
         q_values_next = tf.reduce_max(self.target_dqn(next_states), axis=1, keepdims=True)
-        expected_q = rewards + self.GAMMA * q_values_next * (1 - dones)
+        expected_q = rewards + self.config['GAMMA'] * q_values_next * (1 - dones)
 
         with tf.GradientTape() as tape:
             q_values = tf.batch_gather(self.dqn(states), np.vstack(actions))
