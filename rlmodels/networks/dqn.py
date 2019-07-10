@@ -4,13 +4,13 @@ from .base_network import BaseNetwork
 
 
 class DQN(BaseNetwork):
-    def __init__(self, state_size, action_size, hidden_layers):
-        if not hidden_layers:
+    def __init__(self, state_size, action_size, params):
+        if not params['hidden_layers']:
             raise ValueError('hidden_layers cannot be empty')
 
         super().__init__(state_size, action_size)
 
-        self.dqn = self._build_dqn(self, state_size, action_size, hidden_layers)
+        self.dqn = self._build_dqn(self, state_size, action_size, params['hidden_layers'])
 
     def _build_dqn(self, state_size, action_size, hidden_layers):
         net = keras.models.Sequential()
@@ -22,10 +22,14 @@ class DQN(BaseNetwork):
 
         return net
 
+    def output(self, states):
+        return self.dqn(states)
+
     def loss(self, states, actions, rewards, next_states, dones, gamma=1):
         q_values = tf.batch_gather(self.dqn(states), actions)
 
-        q_values_next = tf.reduce_max(self.dqn(next_states), axis=1, keepdims=True)
+        q_values_next = tf.reduce_max(
+            self.dqn(next_states), axis=1, keepdims=True)
         expected_q = rewards + gamma * q_values_next * (1 - dones)
         tf.stop_gradient(expected_q)
 

@@ -2,11 +2,6 @@ import abc
 
 
 class BaseAgent(abc.ABC):
-    def __init__(self, state_shape, action_size, config):
-        self.state_shape = state_shape
-        self.action_size = action_size
-        self.config = config
-
     @abc.abstractmethod
     def act(self, state):
         pass
@@ -16,5 +11,12 @@ class BaseAgent(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def learn(self, states, actions, rewards, next_states, dones):
+    def learn(self, experiences):
         pass
+
+
+class Agent(BaseAgent):
+    def __init__(self, config):
+        super().__init__()
+        self.state_shape = config.state_shape
+        self.action_size = config.action_size

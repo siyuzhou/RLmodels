@@ -1,7 +1,7 @@
 import sys
 import gym
 import numpy as np
-import models
+import rlmodels
 
 
 CONFIG = {
@@ -19,10 +19,10 @@ def main():
     env_id = "CartPole-v0"
     env = gym.make(env_id)
 
-    dqn_agent = models.DDQNAgent(env.observation_space.shape,
-                                 [32, 32],
-                                 env.action_space.n,
-                                 CONFIG)
+    dqn_agent = rlmodels.DDQNAgent(env.observation_space.shape,
+                                   [32, 32],
+                                   env.action_space.n,
+                                   CONFIG)
 
     all_rewards = []
 
