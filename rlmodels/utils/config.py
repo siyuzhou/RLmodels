@@ -4,19 +4,20 @@ from .. import memories
 
 class Config:
     def __init__(self,
-                 state_shape,
-                 action_size,
-                 network,
-                 network_params,
-                 memory='ReplayBuffer',
                  memory_capacity=int(1e5),
                  epsilon_min=0.01,
                  epsilon_max=1,
                  epsilon_decay=0.995,
                  gamma=0.95,
+                 alpha=0.01,
                  learning_rate=1e-3,
-                 batch_size=32,
-                 state_encoder=None,
-                 state_encoder_params=None
+                 batch_size=32
                  ):
-        pass
+        self.memory_capacity = memory_capacity
+        self.epsilon_min = epsilon_min
+        self.epsilon_max = epsilon_max
+        self.epsilon_decay = epsilon_decay
+
+        self.gamma = gamma
+        self.learning_rate = learning_rate
+        self.batch_size = batch_size

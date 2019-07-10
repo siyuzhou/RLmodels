@@ -2,22 +2,22 @@ import abc
 
 
 class BaseNetwork(abc.ABC):
-    def __init__(self, state_size, action_size):
-        self.state_size = state_size
+    def __init__(self, action_size):
         self.action_size = action_size
 
     @abc.abstractmethod
-    def output(self, state):
+    def output(self, states):
         pass
 
     @abc.abstractmethod
     def loss(self, states, actions, rewards, next_states, dones, **kwargs):
         pass
 
+    @property
     @abc.abstractmethod
-    def variables(self):
+    def trainable_variables(self):
         pass
 
     @abc.abstractmethod
-    def update(self):
+    def update(self, **kwargs):
         pass

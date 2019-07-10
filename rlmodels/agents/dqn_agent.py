@@ -3,32 +3,45 @@ import tensorflow as tf
 from tensorflow import keras
 
 from ..memories import ReplayBuffer
-from ..networks import DQN
+from ..networks import DQN, DDQN, NoEncoder
 from .base_agent import BaseAgent
+from ..utils import Config
 
 
 class DQNAgent(BaseAgent):
-    def __init__(self, state_shape, action_size, hidden_layers,
-                 config,
+    def __init__(self, state_shape, action_size,
+                 hidden_units,
+                 state_encoder=NoEncoder,
+                 state_encoder_params=None,
+                 memory=ReplayBuffer,
+                 config=None,
                  seed=None):
 
-        if not hidden_layers:
+        if not hidden_units:
             raise ValueError('hidden_layers cannot be empty')
 
-        self.config = config
-        self.epsilon = self.config['EPSILON_MAX']
-        self.memory = ReplayBuffer(self.config['BUFFER_SIZE'], seed)
+        super().__init__(state_shape, action_size)
 
-        self.dqn = DQN(state_shape, hidden_layers, action_size)
+        self.config = config
+        if self.config is None:
+            self.config = Config()
+
+        self.epsilon = self.config.epsilon_max
+        self.memory = memory(self.config.memory_capacity, seed)
+
+        self.state_encoder = state_encoder(state_shape, state_encoder_params)
+        self.network = DQN(action_size, hidden_units)
         self.optimizer = tf.train.AdamOptimizer()
 
-        self.action_size = action_size
         self.random = np.random.RandomState(seed)
 
     def act(self, state):
         if self.random.rand() > self.epsilon:
             with tf.device('/cpu:0'):
-                q_values = self.dqn.predict(np.expand_dims(state, 0))
+                state_tensor = tf.expand_dims(tf.constant(state, dtype=tf.float32), 0)
+                q_values = self.network.output(self.state_encoder(state_tensor))
+                q_values = keras.backend.eval(q_values)
+
             return np.argmax(q_values)
 
         return self.random.randint(self.action_size)
@@ -36,12 +49,12 @@ class DQNAgent(BaseAgent):
     def step(self, state, action, reward, next_state, done):
         self.memory.add((state, action, reward, next_state, done))
 
-        if len(self.memory) > self.config['BATCH_SIZE']:
-            experiences = self._sample(self.config['BATCH_SIZE'])
+        if len(self.memory) > self.config.batch_size:
+            experiences = self._sample(self.config.batch_size)
             self.learn(experiences)
 
         self.epsilon = max(
-            self.epsilon * self.config['EPSILON_DECAY'], self.config['EPSILON_MIN'])
+            self.epsilon * self.config.epsilon_decay, self.config.epsilon_min)
 
     def _sample(self, n):
         states, actions, rewards, next_states, dones = self.memory.sample(n)
@@ -56,42 +69,45 @@ class DQNAgent(BaseAgent):
     def learn(self, experiences):
         states, actions, rewards, next_states, dones = experiences
 
-        q_values_next = tf.reduce_max(
-            self.dqn(next_states), axis=1, keepdims=True)
-        expected_q = rewards + \
-            self.config['GAMMA'] * q_values_next * (1 - dones)
-
         with tf.GradientTape() as tape:
-            q_values = tf.batch_gather(self.dqn(states), np.vstack(actions))
-            loss = keras.losses.mse(expected_q, q_values)
+            states = self.state_encoder(states)
+            next_states = self.state_encoder(next_states)
 
-        grads = tape.gradient(loss, self.dqn.trainable_variables)
-        self.optimizer.apply_gradients(
-            zip(grads, self.dqn.trainable_variables))
+            loss = self.network.loss(states, actions, rewards, next_states, dones, self.config.gamma)
+
+        trainable_variables = self.state_encoder.trainable_variables + self.network.trainable_variables
+        grads = tape.gradient(loss, trainable_variables)
+        self.optimizer.apply_gradients(zip(grads, trainable_variables))
 
 
 class DDQNAgent(DQNAgent):
-    def __init__(self, state_shape, action_size, hidden_layers, config, seed=None):
-        super().__init__(state_shape, hidden_layers, action_size, config, seed)
+    def __init__(self, state_shape, action_size,
+                 hidden_units,
+                 state_encoder=NoEncoder,
+                 state_encoder_params=None,
+                 memory=ReplayBuffer,
+                 config=None,
+                 seed=None):
 
-        self.target_dqn = self._build_dqn(state_shape, hidden_layers, action_size)
+        if not hidden_units:
+            raise ValueError('hidden_layers cannot be empty')
+
+        BaseAgent.__init__(self, state_shape, action_size)
+
+        self.config = config
+        if self.config is None:
+            self.config = Config()
+
+        self.epsilon = self.config.epsilon_max
+        self.memory = memory(self.config.memory_capacity, seed)
+
+        self.state_encoder = state_encoder(state_shape, state_encoder_params)
+        self.network = DDQN(action_size, hidden_units)
+        self.optimizer = tf.train.AdamOptimizer()
+
+        self.random = np.random.RandomState(seed)
 
     def learn(self, experiences):
-        states, actions, rewards, next_states, dones = experiences
+        super().learn(self, experiences)
 
-        q_values_next = tf.reduce_max(self.target_dqn(next_states), axis=1, keepdims=True)
-        expected_q = rewards + self.config['GAMMA'] * q_values_next * (1 - dones)
-
-        with tf.GradientTape() as tape:
-            q_values = tf.batch_gather(self.dqn(states), np.vstack(actions))
-            loss = keras.losses.mse(expected_q, q_values)
-
-        grads = tape.gradient(loss, self.dqn.trainable_variables)
-        self.optimizer.apply_gradients(zip(grads, self.dqn.trainable_variables))
-
-        self._update_target(0.1)
-
-    def _update_target(self, alpha):
-        new_weights = [(1 - alpha) * target_weights + alpha * local_weights
-                       for target_weights, local_weights in zip(self.target_dqn.get_weights(), self.dqn.get_weights())]
-        self.target_dqn.set_weights(new_weights)
+        self.network.update(self.config.alpha)

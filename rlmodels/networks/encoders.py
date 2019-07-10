@@ -3,8 +3,9 @@ from tensorflow import keras
 
 
 class NoEncoder(keras.layers.Layer):
-    def __init__(self, input_shape):
-        self.layer = keras.Lambda(lambda x: x, input_shape=input_shape)
+    def __init__(self, input_shape, params):
+        super().__init__()
+        self.layer = keras.layers.Lambda(lambda x: x, input_shape=input_shape)
 
     def call(self, x):
         return self.layer(x)
@@ -14,8 +15,9 @@ class MLPEncoder(keras.layers.Layer):
     def __init__(self, input_shape, params):
         if not params['hidden_units']:
             raise ValueError('hidden_units cannot be empty')
-
         hidden_units = params['hidden_units']
+
+        super().__init__()
 
         name = f'dense_{0}'
         self.hidden_layers = [name]
@@ -37,8 +39,9 @@ class CNNEncoder(keras.layers.Layer):
     def __init__(self, input_shape, params):
         if not params['filters']:
             raise ValueError('filters cannot be empty')
-
         filters = params['filters']
+
+        super().__init__()
 
         conv_name = f'conv_{0}'
         pool_name = f'pool_{0}'
