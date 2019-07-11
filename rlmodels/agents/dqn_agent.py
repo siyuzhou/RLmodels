@@ -29,7 +29,10 @@ class DQNAgent(BaseAgent):
         self.epsilon = self.config.epsilon_max
         self.memory = memory(self.config.memory_capacity, seed)
 
-        self.state_encoder = state_encoder(state_shape, state_encoder_params)
+        if state_encoder_params is None:
+            state_encoder_params = {}
+        self.state_encoder = state_encoder(state_shape, **state_encoder_params)
+
         self.network = DQN(action_size, hidden_units)
         self.optimizer = tf.train.AdamOptimizer(self.config.learning_rate)
 
