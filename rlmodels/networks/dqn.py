@@ -4,6 +4,8 @@ from .base_network import BaseNetwork
 
 
 class DQN(BaseNetwork):
+    """Deep Q Network"""
+
     def __init__(self, action_size, hidden_units):
         if not hidden_units:
             raise ValueError("'hidden_units' cannot be empty")
@@ -44,6 +46,8 @@ class DQN(BaseNetwork):
 
 
 class DDQN(DQN):
+    """Deep Double Q Network"""
+
     def __init__(self, action_size, hidden_units):
         if not hidden_units:
             raise ValueError("'hidden_units' cannot be empty")
