@@ -20,4 +20,5 @@ class Config:
 
         self.gamma = gamma
         self.learning_rate = learning_rate
+        self.alpha = alpha
         self.batch_size = batch_size

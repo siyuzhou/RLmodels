@@ -25,7 +25,7 @@ class DQN(BaseNetwork):
         return self.dqn(states)
 
     def loss(self, states, actions, rewards, next_states, dones, gamma=1):
-        q_values = tf.batch_gather(self.dqn(states), actions)
+        q_values = tf.batch_gather(self.dqn(states), actions)  # actions is a column vector.
 
         q_values_next = tf.reduce_max(self.dqn(next_states), axis=1, keepdims=True)
         expected_q = rewards + gamma * q_values_next * (1 - dones)

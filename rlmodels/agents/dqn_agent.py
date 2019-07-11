@@ -31,7 +31,7 @@ class DQNAgent(BaseAgent):
 
         self.state_encoder = state_encoder(state_shape, state_encoder_params)
         self.network = DQN(action_size, hidden_units)
-        self.optimizer = tf.train.AdamOptimizer()
+        self.optimizer = tf.train.AdamOptimizer(self.config.learning_rate)
 
         self.random = np.random.RandomState(seed)
 
@@ -60,6 +60,7 @@ class DQNAgent(BaseAgent):
         states, actions, rewards, next_states, dones = self.memory.sample(n)
 
         states = tf.constant(np.vstack(states), tf.float32)
+        actions = tf.constant(np.vstack(actions), tf.int32)
         rewards = tf.constant(np.vstack(rewards), tf.float32)
         next_states = tf.constant(np.vstack(next_states), tf.float32)
         dones = tf.constant(np.vstack(dones), tf.float32)
@@ -73,7 +74,8 @@ class DQNAgent(BaseAgent):
             states = self.state_encoder(states)
             next_states = self.state_encoder(next_states)
 
-            loss = self.network.loss(states, actions, rewards, next_states, dones, self.config.gamma)
+            loss = self.network.loss(states, actions, rewards,
+                                     next_states, dones, self.config.gamma)
 
         trainable_variables = self.state_encoder.trainable_variables + self.network.trainable_variables
         grads = tape.gradient(loss, trainable_variables)
@@ -103,11 +105,11 @@ class DDQNAgent(DQNAgent):
 
         self.state_encoder = state_encoder(state_shape, state_encoder_params)
         self.network = DDQN(action_size, hidden_units)
-        self.optimizer = tf.train.AdamOptimizer()
+        self.optimizer = tf.train.AdamOptimizer(self.config.learning_rate)
 
         self.random = np.random.RandomState(seed)
 
     def learn(self, experiences):
-        super().learn(self, experiences)
+        super().learn(experiences)
 
         self.network.update(self.config.alpha)
