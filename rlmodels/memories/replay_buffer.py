@@ -7,7 +7,7 @@ from .base_memory import BaseMemory
 class ReplayBuffer(BaseMemory):
     """Fixed-size buffer to store experience tuples."""
 
-    def __init__(self, capacity, seed=None):
+    def __init__(self, capacity=1000, seed=None):
         super().__init__()
         self.memory = deque(maxlen=capacity)
         self.random = random.Random(seed)

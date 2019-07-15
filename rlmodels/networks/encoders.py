@@ -3,7 +3,7 @@ from tensorflow import keras
 
 
 class NoEncoder(keras.layers.Layer):
-    def __init__(self, input_shape):
+    def __init__(self, input_shape, params=None):
         super().__init__()
         self.layer = keras.layers.Lambda(lambda x: x, input_shape=input_shape)
 
