@@ -1,1 +1,1 @@
-from .agents import DQNAgent, DDQNAgent
+from .agents import DQNAgent, DoubleDQNAgent, DuelingDQNAgent
