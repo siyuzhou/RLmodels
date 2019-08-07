@@ -11,9 +11,10 @@ def main():
     env_id = "CartPole-v0"
     env = gym.make(env_id)
 
-    dqn_agent = rlmodels.DDQNAgent(env.observation_space.shape,
-                                   env.action_space.n,
-                                   [32, 32])
+    dqn_agent = rlmodels.DuelingDQNAgent(env.observation_space.shape,
+                                         env.action_space.n,
+                                         [32, 32],
+                                         [32, 32])
 
     all_rewards = []
 
