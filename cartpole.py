@@ -3,6 +3,7 @@ import gym
 import numpy as np
 import tensorflow as tf
 import rlmodels
+from rlmodels.networks import MLPEncoder
 
 tf.enable_eager_execution()
 
@@ -13,8 +14,9 @@ def main():
 
     dqn_agent = rlmodels.DuelingDQNAgent(env.observation_space.shape,
                                          env.action_space.n,
-                                         [32, 32],
-                                         [32, 32])
+                                         [32],
+                                         [32],
+                                         encoder=MLPEncoder(env.observation_space.shape, [32]))
 
     all_rewards = []
 
