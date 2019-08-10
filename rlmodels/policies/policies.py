@@ -39,16 +39,16 @@ class GreedyPolicy(BasePolicy):
 
 
 class EpsilonGreedyPolicy(BasePolicy):
-    @property
-    def discrete(self):
-        return True
-
     def __init__(self, epsilon_max, epsilon_min, epsilon_decay, seed=None):
-        self._epsilon = self.epsilon_max
+        self._epsilon = epsilon_max
         self.epsilon_min = epsilon_min
         self.epsilon_decay = epsilon_decay
 
         self.random = np.random.RandomState(seed)
+
+    @property
+    def discrete(self):
+        return True
 
     @property
     def epsilon(self):

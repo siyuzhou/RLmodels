@@ -4,6 +4,7 @@ from tensorflow import keras
 
 from ..memories import ReplayBuffer
 from ..networks import DQN, DoubleDQN, DuelingDQN, NoEncoder
+from ..policies import EpsilonGreedyPolicy
 from .base_agent import BaseAgent
 from ..utils import Config
 
@@ -28,20 +29,18 @@ class DQNAgent(BaseAgent):
         if self.config is None:
             self.config = Config()
 
-        self.epsilon = self.config.epsilon_max
+        self.policy = EpsilonGreedyPolicy(
+            self.config.epsilon_max, self.config.epsilon_min, self.config.epsilon_decay)
 
         self.random = np.random.RandomState(seed)
 
     def act(self, state):
-        if self.random.rand() > self.epsilon:
-            with tf.device('/cpu:0'):
-                state_tensor = tf.expand_dims(tf.constant(state, dtype=tf.float32), 0)
-                q_values = self.network.output(self.encoder(state_tensor))
-                q_values = keras.backend.eval(q_values)
+        with tf.device('/cpu:0'):
+            state_tensor = tf.expand_dims(tf.constant(state, dtype=tf.float32), 0)
+            q_values = self.network.output(self.encoder(state_tensor))
+            q_values = keras.backend.eval(q_values)
 
-            return np.argmax(q_values)
-
-        return self.random.randint(self.action_size)
+        return self.policy(q_values)
 
     def step(self, state, action, reward, next_state, done):
         self.memory.add((state, action, reward, next_state, done))
@@ -50,8 +49,7 @@ class DQNAgent(BaseAgent):
             experiences = self._sample(self.config.batch_size)
             self.learn(experiences)
 
-        self.epsilon = max(
-            self.epsilon * self.config.epsilon_decay, self.config.epsilon_min)
+        self.policy.update()
 
 
 class DoubleDQNAgent(DQNAgent):
@@ -74,7 +72,8 @@ class DoubleDQNAgent(DQNAgent):
         if self.config is None:
             self.config = Config()
 
-        self.epsilon = self.config.epsilon_max
+        self.policy = EpsilonGreedyPolicy(
+            self.config.epsilon_max, self.config.epsilon_min, self.config.epsilon_decay)
 
         self.random = np.random.RandomState(seed)
 
@@ -106,7 +105,8 @@ class DuelingDQNAgent(DQNAgent):
         if self.config is None:
             self.config = Config()
 
-        self.epsilon = self.config.epsilon_max
+        self.policy = EpsilonGreedyPolicy(
+            self.config.epsilon_max, self.config.epsilon_min, self.config.epsilon_decay)
 
         self.random = np.random.RandomState(seed)
 
