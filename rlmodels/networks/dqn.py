@@ -7,13 +7,13 @@ from .modules import MLP
 class DQN(BaseNetwork):
     """Deep Q Network"""
 
-    def __init__(self, action_size, hidden_units):
-        if not hidden_units:
-            raise ValueError("'hidden_units' cannot be empty")
+    def __init__(self, action_size, units):
+        if not units:
+            raise ValueError("'units' cannot be empty")
 
         super().__init__(action_size)
 
-        self.dqn = MLP(action_size, hidden_units)
+        self.dqn = MLP(action_size, units)
 
     def output(self, states):
         return self.dqn(states)
@@ -38,14 +38,14 @@ class DQN(BaseNetwork):
 
 
 class DoubleDQN(BaseNetwork):
-    def __init__(self, action_size, hidden_units):
-        if not hidden_units:
-            raise ValueError("'hidden_units' cannot be empty")
+    def __init__(self, action_size, units):
+        if not units:
+            raise ValueError("'units' cannot be empty")
 
         super().__init__(action_size)
 
-        self.dqn = MLP(action_size, hidden_units)
-        self.target_dqn = MLP(action_size, hidden_units)
+        self.dqn = MLP(action_size, units)
+        self.target_dqn = MLP(action_size, units)
 
     def output(self, states):
         return self.dqn(states)
