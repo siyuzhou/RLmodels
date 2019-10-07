@@ -140,7 +140,7 @@ class PrioritizedMemory(BaseMemory):
 
         importance_weight /= importance_weight.max()  # Normalization.
 
-        return idxs, batch, importance_weight
+        return batch, idxs, importance_weight
 
     def update(self, idx, error):
         """Update the priority of index `idx` only."""
