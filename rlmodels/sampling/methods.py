@@ -2,7 +2,7 @@ import abc
 import numpy as np
 
 
-class BasePolicy(abc.ABC):
+class BaseSamplingMethod(abc.ABC):
     @property
     @abc.abstractmethod
     def discrete(self) -> bool:
@@ -16,8 +16,8 @@ class BasePolicy(abc.ABC):
         pass
 
 
-class RandomPolicy(BasePolicy):
-    def __init__(self, action_size, seed):
+class UniformSampling(BaseSamplingMethod):
+    def __init__(self, action_size, seed=None):
         self.action_size = action_size
         self.random = np.random.RandomState(seed)
 
@@ -29,7 +29,7 @@ class RandomPolicy(BasePolicy):
         return self.random.randint(self.action_size)
 
 
-class GreedyPolicy(BasePolicy):
+class GreedySampling(BaseSamplingMethod):
     @property
     def discrete(self):
         return True
@@ -38,7 +38,7 @@ class GreedyPolicy(BasePolicy):
         return np.argmax(q_values)
 
 
-class EpsilonGreedyPolicy(BasePolicy):
+class EpsilonGreedySampling(BaseSamplingMethod):
     def __init__(self, epsilon_max, epsilon_min, epsilon_decay, seed=None):
         self._epsilon = epsilon_max
         self.epsilon_min = epsilon_min

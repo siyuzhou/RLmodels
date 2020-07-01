@@ -2,8 +2,9 @@ import abc
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from ..networks import NoEncoder
-from ..memories import ReplayBuffer
+
+from rlmodels.networks.encoders import NoEncoder
+from rlmodels.memories import ReplayBuffer
 
 
 class BaseAgent(abc.ABC):
@@ -19,7 +20,7 @@ class BaseAgent(abc.ABC):
 
         self.network = network
         self.encoder = encoder if encoder else NoEncoder(state_shape)
-        self.optimizer = optimizer if optimizer else tf.train.AdamOptimizer()
+        self.optimizer = optimizer if optimizer else keras.optimizers.Adam()
 
         self.memory = memory if memory else ReplayBuffer()
 

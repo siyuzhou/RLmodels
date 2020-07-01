@@ -2,11 +2,13 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 
-from ..memories import ReplayBuffer
-from ..networks import DQN, DoubleDQN, DuelingDQN, NoEncoder
-from ..policies import EpsilonGreedyPolicy
+from rlmodels.memories import ReplayBuffer
+from rlmodels.networks import DQN, DoubleDQN, DuelingDQN
+from rlmodels.networks.encoders import NoEncoder
+from rlmodels.sampling import EpsilonGreedySampling
+
 from .base_agent import BaseAgent
-from ..utils import Config
+from rlmodels.utils import Config
 
 
 class DQNAgent(BaseAgent):
@@ -29,7 +31,7 @@ class DQNAgent(BaseAgent):
         if self.config is None:
             self.config = Config()
 
-        self.policy = EpsilonGreedyPolicy(
+        self.policy = EpsilonGreedySampling(
             self.config.epsilon_max, self.config.epsilon_min, self.config.epsilon_decay)
 
         self.random = np.random.RandomState(seed)
@@ -72,7 +74,7 @@ class DoubleDQNAgent(DQNAgent):
         if self.config is None:
             self.config = Config()
 
-        self.policy = EpsilonGreedyPolicy(
+        self.policy = EpsilonGreedySampling(
             self.config.epsilon_max, self.config.epsilon_min, self.config.epsilon_decay)
 
         self.random = np.random.RandomState(seed)
@@ -85,7 +87,7 @@ class DoubleDQNAgent(DQNAgent):
 class DuelingDQNAgent(DQNAgent):
     def __init__(self, state_shape, action_size,
                  v_units,
-                 a_units,
+                 a_units=None,
                  encoder=None,
                  memory=None,
                  config=None,
@@ -94,7 +96,7 @@ class DuelingDQNAgent(DQNAgent):
         if not v_units:
             raise ValueError('v_units cannot be empty')
         if not a_units:
-            raise ValueError('a_units cannot be empty')
+            a_units = v_units
 
         BaseAgent.__init__(self, state_shape, action_size,
                            network=DuelingDQN(action_size, v_units, a_units),
@@ -105,7 +107,7 @@ class DuelingDQNAgent(DQNAgent):
         if self.config is None:
             self.config = Config()
 
-        self.policy = EpsilonGreedyPolicy(
+        self.policy = EpsilonGreedySampling(
             self.config.epsilon_max, self.config.epsilon_min, self.config.epsilon_decay)
 
         self.random = np.random.RandomState(seed)
