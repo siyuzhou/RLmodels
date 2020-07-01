@@ -1,7 +1,3 @@
-from .. import networks
-from .. import memories
-
-
 class Config:
     def __init__(self,
                  memory_capacity=int(1e5),
@@ -27,3 +23,6 @@ class Config:
 
         for key, value in kwargs.items():
             self.__setattr__(key, value)
+
+    def __getitem__(self, key):
+        return self.__getattribute__(key)

@@ -5,6 +5,7 @@ from tensorflow import keras
 
 from rlmodels.networks.encoders import NoEncoder
 from rlmodels.memories import ReplayBuffer
+from rlmodels.utils import Config
 
 
 class BaseAgent(abc.ABC):
@@ -13,6 +14,7 @@ class BaseAgent(abc.ABC):
                  encoder=None,
                  optimizer=None,
                  memory=None,
+                 config=None
                  ):
 
         self.state_shape = state_shape
@@ -23,6 +25,10 @@ class BaseAgent(abc.ABC):
         self.optimizer = optimizer if optimizer else keras.optimizers.Adam()
 
         self.memory = memory if memory else ReplayBuffer()
+
+        self.config = config
+        if self.config is None:
+            self.config = Config()
 
     @abc.abstractmethod
     def act(self, state):
@@ -59,3 +65,5 @@ class BaseAgent(abc.ABC):
         trainable_variables = self.encoder.trainable_variables + self.network.trainable_variables
         grads = tape.gradient(loss, trainable_variables)
         self.optimizer.apply_gradients(zip(grads, trainable_variables))
+
+        self.network.update(self.config)

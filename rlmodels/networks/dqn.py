@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
 from .base_network import BaseNetwork
-from .core import QFunctionDescrete, QAdvantageFunctionDescrete
+from .core import QFunctionDiscrete, QAdvantageFunctionDiscrete
 
 
 class DQN(BaseNetwork):
@@ -13,9 +13,9 @@ class DQN(BaseNetwork):
 
         super().__init__(action_size)
 
-        self.dqn = QFunctionDescrete(action_size, units)
+        self.dqn = QFunctionDiscrete(action_size, units)
 
-    def output(self, states):
+    def call(self, states):
         return self.dqn(states)
 
     def loss(self, states, actions, rewards, next_states, dones, gamma=1):
@@ -30,11 +30,7 @@ class DQN(BaseNetwork):
 
         return loss
 
-    @property
-    def trainable_variables(self):
-        return self.dqn.trainable_variables
-
-    def update(self):
+    def update(self, params):
         pass
 
 
@@ -45,10 +41,12 @@ class DoubleDQN(BaseNetwork):
 
         super().__init__(action_size)
 
-        self.dqn = QFunctionDescrete(action_size, units)
-        self.target_dqn = QFunctionDescrete(action_size, units)
+        self.dqn = QFunctionDiscrete(action_size, units)
+        self.target_dqn = QFunctionDiscrete(action_size, units)
 
-    def output(self, states):
+        self.target_dqn.trainable = False
+
+    def call(self, states):
         return self.dqn(states)
 
     def loss(self, states, actions, rewards, next_states, dones, gamma=0.99):
@@ -62,11 +60,9 @@ class DoubleDQN(BaseNetwork):
 
         return loss
 
-    @property
-    def trainable_variables(self):
-        return self.dqn.trainable_variables
+    def update(self, params):
+        alpha = params.alpha
 
-    def update(self, alpha):
         new_weights = [(1 - alpha) * target_weights + alpha * local_weights
                        for target_weights, local_weights in zip(self.target_dqn.get_weights(), self.dqn.get_weights())]
         self.target_dqn.set_weights(new_weights)
@@ -81,10 +77,12 @@ class DuelingDQN(BaseNetwork):
 
         super().__init__(action_size)
 
-        self.dqn = QAdvantageFunctionDescrete(action_size, v_units, a_units)
-        self.target_dqn = QAdvantageFunctionDescrete(action_size, v_units, a_units)
+        self.dqn = QAdvantageFunctionDiscrete(action_size, v_units, a_units)
+        self.target_dqn = QAdvantageFunctionDiscrete(action_size, v_units, a_units)
 
-    def output(self, states):
+        self.target_dqn.trainable = False
+
+    def call(self, states):
         return self.dqn(states)
 
     def loss(self, states, actions, rewards, next_states, dones, gamma=0.99):
@@ -98,11 +96,9 @@ class DuelingDQN(BaseNetwork):
 
         return loss
 
-    @property
-    def trainable_variables(self):
-        return self.dqn.trainable_variables
+    def update(self, params):
+        alpha = params.alpha
 
-    def update(self, alpha):
         new_weights = [(1 - alpha) * target_weights + alpha * local_weights
                        for target_weights, local_weights in zip(self.target_dqn.get_weights(), self.dqn.get_weights())]
         self.target_dqn.set_weights(new_weights)

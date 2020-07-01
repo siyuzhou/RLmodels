@@ -25,11 +25,8 @@ class DQNAgent(BaseAgent):
         super().__init__(state_shape, action_size,
                          network=DQN(action_size, hidden_units),
                          encoder=encoder,
-                         memory=memory)
-
-        self.config = config
-        if self.config is None:
-            self.config = Config()
+                         memory=memory,
+                         config=config)
 
         self.sampling = EpsilonGreedySampling(
             self.config.epsilon_max, self.config.epsilon_min, self.config.epsilon_decay)
@@ -39,17 +36,10 @@ class DQNAgent(BaseAgent):
     def act(self, state):
         with tf.device('/cpu:0'):
             state_tensor = tf.expand_dims(tf.constant(state, dtype=tf.float32), 0)
-            q_values = self.network.output(self.encoder(state_tensor))
+            q_values = self.network(self.encoder(state_tensor))
             q_values = q_values.numpy().squeeze(0)
 
         return self.sampling(q_values)
-
-    def step(self, state, action, reward, next_state, done):
-        self.memory.add((state, action, reward, next_state, done))
-
-        if len(self.memory) > self.config.batch_size:
-            experiences = self._sample(self.config.batch_size)
-            self.learn(experiences)
 
 
 class DoubleDQNAgent(DQNAgent):
@@ -66,7 +56,8 @@ class DoubleDQNAgent(DQNAgent):
         BaseAgent.__init__(self, state_shape, action_size,
                            network=DoubleDQN(action_size, hidden_units),
                            encoder=encoder,
-                           memory=memory)
+                           memory=memory,
+                           config=config)
 
         self.config = config
         if self.config is None:
@@ -76,10 +67,6 @@ class DoubleDQNAgent(DQNAgent):
             self.config.epsilon_max, self.config.epsilon_min, self.config.epsilon_decay)
 
         self.random = np.random.RandomState(seed)
-
-    def learn(self, experiences):
-        super().learn(experiences)
-        self.network.update(self.config.alpha)
 
 
 class DuelingDQNAgent(DQNAgent):
@@ -109,7 +96,3 @@ class DuelingDQNAgent(DQNAgent):
             self.config.epsilon_max, self.config.epsilon_min, self.config.epsilon_decay)
 
         self.random = np.random.RandomState(seed)
-
-    def learn(self, experiences):
-        super().learn(experiences)
-        self.network.update(self.config.alpha)

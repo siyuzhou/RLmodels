@@ -18,12 +18,8 @@ class ActorCritic(BaseNetwork):
         self.actor = DiscreteProbablisticPolicy(action_size, actor_units, logits=True)
         self.critic = QFunctionDiscrete(action_size, critic_units)
 
-    def output(self, states):
+    def call(self, states):
         return tf.math.softmax(self.actor(states))
-
-    @property
-    def trainable_variables(self):
-        return self.actor.trainable_variables + self.critic.trainable_variables
 
     def loss(self, states, actions, rewards, next_states, dones, gamma=0.99, ratio=1.):
         q_a_values = tf.gather(self.critic(states), actions, batch_dims=-1)
@@ -43,7 +39,7 @@ class ActorCritic(BaseNetwork):
 
         return actor_loss + ratio * critic_loss
 
-    def update(self):
+    def update(self, params):
         pass
 
 
@@ -64,12 +60,8 @@ class DeepDeterministicPolicyGradient(BaseNetwork):
         self.critic = QFunction(critic_units)
         self.critic_target = QFunction(critic_units)
 
-    def output(self, states):
+    def call(self, states):
         return self.actor(states)
-
-    @property
-    def trainable_variables(self):
-        return self.actor.trainable_variables + self.critic.trainable_variables
 
     def loss(self, states, actions, rewards, next_states, dones, gamma=0.99, ratio=1.):
         # Loss for critic
@@ -86,7 +78,9 @@ class DeepDeterministicPolicyGradient(BaseNetwork):
 
         return actor_loss + ratio * critic_loss
 
-    def update(self, alpha):
+    def update(self, params):
+        alpha = params.alpha
+
         new_actor_weights = [(1 - alpha) * target_weights + alpha * local_weights
                              for target_weights, local_weights in zip(self.actor_target.get_weights(), self.actor.get_weights())]
         self.actor_target.set_weights(new_actor_weights)

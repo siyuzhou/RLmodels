@@ -1,8 +1,6 @@
 import tensorflow as tf
 from tensorflow import keras
 
-# Works only for tensorflow >= 1.14
-
 
 class MLP(keras.layers.Layer):
     def __init__(self, output_size, hidden_units, activation=None):

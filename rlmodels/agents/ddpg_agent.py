@@ -8,7 +8,6 @@ from rlmodels.networks.encoders import NoEncoder
 from rlmodels.sampling import Clipping, OUNoise
 
 from .base_agent import BaseAgent
-from rlmodels.utils import Config
 
 
 class DDPGAgent(BaseAgent):
@@ -30,11 +29,8 @@ class DDPGAgent(BaseAgent):
         super().__init__(state_shape, action_size,
                          network=network,
                          encoder=encoder,
-                         memory=memory)
-
-        self.config = config
-        if self.config is None:
-            self.config = Config()
+                         memory=memory,
+                         config=config)
 
         self.sampling = Clipping(config.action_low, config.action_high)
         self.noise = OUNoise(action_size, seed)
@@ -42,11 +38,7 @@ class DDPGAgent(BaseAgent):
     def act(self, state):
         with tf.device('/cpu:0'):
             state_tensor = tf.expand_dims(tf.constant(state, dtype=tf.float32), 0)
-            action = self.network.output(self.encoder(state_tensor))
+            action = self.network(self.encoder(state_tensor))
             action = action.numpy().squeeze() + self.noise.sample()
 
         return self.sampling(action)
-
-    def learn(self, experiences):
-        super().learn(experiences)
-        self.network.update(self.config.alpha)

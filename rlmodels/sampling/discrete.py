@@ -4,7 +4,7 @@ import numpy as np
 from .base_sampling import BaseSampling
 
 
-class UniformSampling(BaseSamplingMethod):
+class UniformSampling(BaseSampling):
     def __init__(self, action_size, seed=None):
         self.action_size = action_size
         self.random = np.random.RandomState(seed)
@@ -17,7 +17,7 @@ class UniformSampling(BaseSamplingMethod):
         return self.random.randint(self.action_size)
 
 
-class GreedySampling(BaseSamplingMethod):
+class GreedySampling(BaseSampling):
     @property
     def discrete(self):
         return True
@@ -26,7 +26,7 @@ class GreedySampling(BaseSamplingMethod):
         return np.argmax(q_values)
 
 
-class EpsilonGreedySampling(BaseSamplingMethod):
+class EpsilonGreedySampling(BaseSampling):
     def __init__(self, epsilon_max, epsilon_min, epsilon_decay, seed=None):
         self._epsilon = epsilon_max
         self.epsilon_min = epsilon_min
