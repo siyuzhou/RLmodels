@@ -9,12 +9,8 @@ class ContinuousDeterministicPolicy(keras.layers.Layer):
 
         self.policy = MLP(1, units)
 
-    def __call__(self, states):
+    def call(self, states):
         return self.policy(states)
-
-    @property
-    def trainable_variables(self):
-        return self.policy.trainable_variables
 
 
 class DiscreteProbablisticPolicy(keras.layers.Layer):
