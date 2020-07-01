@@ -24,7 +24,7 @@ class QFunction(keras.layers.Layer):
         return self.function(inputs)
 
 
-class QFunctionDescrete(keras.layers.Layer):
+class QFunctionDiscrete(keras.layers.Layer):
     def __init__(self, action_size, units):
         super().__init__()
 
@@ -47,12 +47,12 @@ class QAdvantageFunction(keras.layers.Layer):
         return v_values + a_values - tf.reduce_mean(a_values, axis=-1, keepdims=True)
 
 
-class QAdvantageFunctionDescrete(keras.layers.Layer):
+class QAdvantageFunctionDiscrete(keras.layers.Layer):
     def __init__(self, action_size, v_units, a_units):
         super().__init__()
 
         self.v_function = VFunction(v_units)
-        self.a_function = QFunctionDescrete(action_size, a_units)
+        self.a_function = QFunctionDiscrete(action_size, a_units)
 
     def call(self, states):
         v_values = self.v_function(states)

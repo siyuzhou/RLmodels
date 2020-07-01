@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
 from .base_network import BaseNetwork
-from .core import DescreteProbablisticPolicy, QFunctionDescrete, ContinuousDeterministicPolicy, QFunction
+from .core import DiscreteProbablisticPolicy, QFunctionDiscrete, ContinuousDeterministicPolicy, QFunction
 
 
 class ActorCritic(BaseNetwork):
@@ -15,8 +15,8 @@ class ActorCritic(BaseNetwork):
 
         super().__init__(action_size)
 
-        self.actor = DescreteProbablisticPolicy(action_size, actor_units, logits=True)
-        self.critic = QFunctionDescrete(action_size, critic_units)
+        self.actor = DiscreteProbablisticPolicy(action_size, actor_units, logits=True)
+        self.critic = QFunctionDiscrete(action_size, critic_units)
 
     def output(self, states):
         return tf.math.softmax(self.actor(states))

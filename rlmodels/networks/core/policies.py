@@ -17,7 +17,7 @@ class ContinuousDeterministicPolicy(keras.layers.Layer):
         return self.policy.trainable_variables
 
 
-class DescreteProbablisticPolicy(keras.layers.Layer):
+class DiscreteProbablisticPolicy(keras.layers.Layer):
     def __init__(self, action_size, units, logits=False):
         super().__init__()
 
