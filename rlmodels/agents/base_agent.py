@@ -28,9 +28,12 @@ class BaseAgent(abc.ABC):
     def act(self, state):
         pass
 
-    @abc.abstractmethod
-    def step(self, state, action, reward, next_state, done, **kwargs):
-        pass
+    def step(self, state, action, reward, next_state, done):
+        self.memory.add((state, action, reward, next_state, done))
+
+        if len(self.memory) > self.config.batch_size:
+            experiences = self._sample(self.config.batch_size)
+            self.learn(experiences)
 
     def _sample(self, n):
         states, actions, rewards, next_states, dones = self.memory.sample(n)

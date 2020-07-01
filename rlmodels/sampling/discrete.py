@@ -1,19 +1,7 @@
 import abc
 import numpy as np
 
-
-class BaseSamplingMethod(abc.ABC):
-    @property
-    @abc.abstractmethod
-    def discrete(self) -> bool:
-        return True
-
-    @abc.abstractmethod
-    def __call__(self):
-        pass
-
-    def update(self):
-        pass
+from .base_sampling import BaseSampling
 
 
 class UniformSampling(BaseSamplingMethod):
@@ -58,6 +46,7 @@ class EpsilonGreedySampling(BaseSamplingMethod):
         self._epsilon = max(self._epsilon * self.epsilon_decay, self.epsilon_min)
 
     def __call__(self, q_values):
+        self.update()
         if self.random.rand() > self.epsilon:
             return np.argmax(q_values)
 

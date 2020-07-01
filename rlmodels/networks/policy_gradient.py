@@ -43,6 +43,9 @@ class ActorCritic(BaseNetwork):
 
         return actor_loss + ratio * critic_loss
 
+    def update(self):
+        pass
+
 
 class DeepDeterministicPolicyGradient(BaseNetwork):
     """Off-policy version of Actor-Critic model."""
@@ -82,3 +85,12 @@ class DeepDeterministicPolicyGradient(BaseNetwork):
         actor_loss = -tf.reduce_mean(self.critic(states, actions_pred))
 
         return actor_loss + ratio * critic_loss
+
+    def update(self, alpha):
+        new_actor_weights = [(1 - alpha) * target_weights + alpha * local_weights
+                             for target_weights, local_weights in zip(self.actor_target.get_weights(), self.actor.get_weights())]
+        self.actor_target.set_weights(new_actor_weights)
+
+        new_critic_weights = [(1 - alpha) * target_weights + alpha * local_weights
+                              for target_weights, local_weights in zip(self.critic_target.get_weights(), self.critic.get_weights())]
+        self.critic_target.set_weights(new_critic_weights)

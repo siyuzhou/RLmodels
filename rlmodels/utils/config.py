@@ -11,8 +11,10 @@ class Config:
                  gamma=0.95,
                  alpha=0.01,
                  learning_rate=1e-3,
-                 batch_size=32
+                 batch_size=32,
+                 **kwargs
                  ):
+
         self.memory_capacity = memory_capacity
         self.epsilon_min = epsilon_min
         self.epsilon_max = epsilon_max
@@ -22,3 +24,6 @@ class Config:
         self.learning_rate = learning_rate
         self.alpha = alpha
         self.batch_size = batch_size
+
+        for key, value in kwargs.items():
+            self.__setattr__(key, value)

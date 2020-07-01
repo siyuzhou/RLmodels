@@ -31,7 +31,7 @@ class DQNAgent(BaseAgent):
         if self.config is None:
             self.config = Config()
 
-        self.policy = EpsilonGreedySampling(
+        self.sampling = EpsilonGreedySampling(
             self.config.epsilon_max, self.config.epsilon_min, self.config.epsilon_decay)
 
         self.random = np.random.RandomState(seed)
@@ -40,9 +40,9 @@ class DQNAgent(BaseAgent):
         with tf.device('/cpu:0'):
             state_tensor = tf.expand_dims(tf.constant(state, dtype=tf.float32), 0)
             q_values = self.network.output(self.encoder(state_tensor))
-            q_values = keras.backend.eval(q_values)
+            q_values = q_values.numpy().squeeze(0)
 
-        return self.policy(q_values)
+        return self.sampling(q_values)
 
     def step(self, state, action, reward, next_state, done):
         self.memory.add((state, action, reward, next_state, done))
@@ -50,8 +50,6 @@ class DQNAgent(BaseAgent):
         if len(self.memory) > self.config.batch_size:
             experiences = self._sample(self.config.batch_size)
             self.learn(experiences)
-
-        self.policy.update()
 
 
 class DoubleDQNAgent(DQNAgent):
@@ -74,7 +72,7 @@ class DoubleDQNAgent(DQNAgent):
         if self.config is None:
             self.config = Config()
 
-        self.policy = EpsilonGreedySampling(
+        self.sampling = EpsilonGreedySampling(
             self.config.epsilon_max, self.config.epsilon_min, self.config.epsilon_decay)
 
         self.random = np.random.RandomState(seed)
@@ -107,7 +105,7 @@ class DuelingDQNAgent(DQNAgent):
         if self.config is None:
             self.config = Config()
 
-        self.policy = EpsilonGreedySampling(
+        self.sampling = EpsilonGreedySampling(
             self.config.epsilon_max, self.config.epsilon_min, self.config.epsilon_decay)
 
         self.random = np.random.RandomState(seed)
