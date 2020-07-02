@@ -4,7 +4,6 @@ from tensorflow import keras
 
 from rlmodels.memories import ReplayBuffer
 from rlmodels.networks import DQN, DoubleDQN, DuelingDQN
-from rlmodels.networks.encoders import NoEncoder
 from rlmodels.sampling import EpsilonGreedySampling
 
 from .base_agent import BaseAgent

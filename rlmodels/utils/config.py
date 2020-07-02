@@ -23,6 +23,3 @@ class Config:
 
         for key, value in kwargs.items():
             self.__setattr__(key, value)
-
-    def __getitem__(self, key):
-        return self.__getattribute__(key)

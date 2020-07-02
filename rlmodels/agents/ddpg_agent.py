@@ -4,7 +4,6 @@ from tensorflow import keras
 
 from rlmodels.memories import ReplayBuffer
 from rlmodels.networks import DeepDeterministicPolicyGradient
-from rlmodels.networks.encoders import NoEncoder
 from rlmodels.sampling import Clipping, OUNoise
 
 from .base_agent import BaseAgent
@@ -13,7 +12,7 @@ from .base_agent import BaseAgent
 class DDPGAgent(BaseAgent):
     def __init__(self, state_shape, action_size,
                  actor_units,
-                 critic_units,
+                 critic_units=None,
                  encoder=None,
                  memory=None,
                  config=None,

@@ -18,6 +18,10 @@ class ActorCritic(BaseNetwork):
         self.actor = DiscreteProbablisticPolicy(action_size, actor_units, logits=True)
         self.critic = QFunctionDiscrete(action_size, critic_units)
 
+    @property
+    def discrete(self):
+        return True
+
     def call(self, states):
         return tf.math.softmax(self.actor(states))
 
@@ -59,6 +63,13 @@ class DeepDeterministicPolicyGradient(BaseNetwork):
 
         self.critic = QFunction(critic_units)
         self.critic_target = QFunction(critic_units)
+
+        self.actor_target.trainable = False
+        self.critic_target.trainable = False
+
+    @property
+    def discrete(self):
+        return False
 
     def call(self, states):
         return self.actor(states)

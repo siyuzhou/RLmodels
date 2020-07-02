@@ -15,6 +15,10 @@ class DQN(BaseNetwork):
 
         self.dqn = QFunctionDiscrete(action_size, units)
 
+    @property
+    def discrete(self):
+        return True
+
     def call(self, states):
         return self.dqn(states)
 
@@ -45,6 +49,10 @@ class DoubleDQN(BaseNetwork):
         self.target_dqn = QFunctionDiscrete(action_size, units)
 
         self.target_dqn.trainable = False
+
+    @property
+    def discrete(self):
+        return True
 
     def call(self, states):
         return self.dqn(states)
@@ -81,6 +89,10 @@ class DuelingDQN(BaseNetwork):
         self.target_dqn = QAdvantageFunctionDiscrete(action_size, v_units, a_units)
 
         self.target_dqn.trainable = False
+
+    @property
+    def discrete(self):
+        return True
 
     def call(self, states):
         return self.dqn(states)

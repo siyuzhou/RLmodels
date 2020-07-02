@@ -1,3 +1,4 @@
+import os
 import abc
 import numpy as np
 import tensorflow as tf
@@ -17,6 +18,10 @@ class BaseAgent(abc.ABC):
                  config=None
                  ):
 
+        self.config = config
+        if self.config is None:
+            self.config = Config()
+
         self.state_shape = state_shape
         self.action_size = action_size
 
@@ -24,11 +29,9 @@ class BaseAgent(abc.ABC):
         self.encoder = encoder if encoder else NoEncoder(state_shape)
         self.optimizer = optimizer if optimizer else keras.optimizers.Adam()
 
-        self.memory = memory if memory else ReplayBuffer()
+        self.memory = memory if memory else ReplayBuffer(config.memory_capacity)
 
-        self.config = config
-        if self.config is None:
-            self.config = Config()
+        self.action_dtype = tf.int32 if self.network.discrete else tf.float32
 
     @abc.abstractmethod
     def act(self, state):
@@ -45,7 +48,7 @@ class BaseAgent(abc.ABC):
         states, actions, rewards, next_states, dones = self.memory.sample(n)
 
         states = tf.constant(np.vstack(states), tf.float32)
-        actions = tf.constant(np.vstack(actions), tf.int32)
+        actions = tf.constant(np.vstack(actions), self.action_dtype)
         rewards = tf.constant(np.vstack(rewards), tf.float32)
         next_states = tf.constant(np.vstack(next_states), tf.float32)
         dones = tf.constant(np.vstack(dones), tf.float32)
@@ -67,3 +70,16 @@ class BaseAgent(abc.ABC):
         self.optimizer.apply_gradients(zip(grads, trainable_variables))
 
         self.network.update(self.config)
+
+    def save_network(self, checkpoint):
+        os.makedirs(checkpoint, exist_ok=True)
+
+        h5_file = os.path.join(checkpoint, 'network.h5')
+        self.network.save_weights(h5_file)
+
+    def load_network(self, checkpoint):
+        if os.path.exists(checkpoint):
+            h5_file = os.path.join(checkpoint, 'network.h5')
+            self.network.load_weights(h5_file)
+        else:
+            print(f'Checkpoint {checkpoint} not found.')
