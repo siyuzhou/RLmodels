@@ -6,9 +6,6 @@ import rlmodels
 from rlmodels.utils import Config
 
 
-CHECKPOINT = 'checkpoint_pendulum'
-
-
 def main():
     env_id = "Pendulum-v0"
     env = gym.make(env_id)
@@ -22,8 +19,6 @@ def main():
                                [32, 32],
                                action_bounds=action_bounds,
                                config=config)
-
-    agent.load_network(CHECKPOINT)
 
     all_rewards = []
 
@@ -54,7 +49,6 @@ def main():
         sys.stdout.flush()
 
         if (i+1) % 10 == 0:
-            agent.save_network(CHECKPOINT)
             print('')
 
     env.close()
