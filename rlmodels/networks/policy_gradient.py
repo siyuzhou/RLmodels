@@ -50,7 +50,7 @@ class ActorCritic(BaseNetwork):
 class DeepDeterministicPolicyGradient(BaseNetwork):
     """Off-policy version of Actor-Critic model."""
 
-    def __init__(self, action_size, actor_units, critic_units=None):
+    def __init__(self, action_size, actor_units, critic_units=None, action_bounds=None):
         if not actor_units:
             raise ValueError("'actor_units' cannot be empty")
         if not critic_units:
@@ -58,8 +58,8 @@ class DeepDeterministicPolicyGradient(BaseNetwork):
 
         super().__init__(action_size)
 
-        self.actor = ContinuousDeterministicPolicy(actor_units)
-        self.actor_target = ContinuousDeterministicPolicy(actor_units)
+        self.actor = ContinuousDeterministicPolicy(action_size, actor_units, action_bounds)
+        self.actor_target = ContinuousDeterministicPolicy(action_size, actor_units, action_bounds)
 
         self.critic = QFunction(critic_units)
         self.critic_target = QFunction(critic_units)

@@ -71,15 +71,14 @@ class BaseAgent(abc.ABC):
 
         self.network.update(self.config)
 
-    def save_network(self, checkpoint):
-        os.makedirs(checkpoint, exist_ok=True)
+    def save_network(self, path):
+        os.makedirs(path, exist_ok=True)
+        checkpoint = os.path.join(path, 'checkpoint')
+        self.network.save_weights(checkpoint)
 
-        h5_file = os.path.join(checkpoint, 'network.h5')
-        self.network.save_weights(h5_file)
-
-    def load_network(self, checkpoint):
+    def load_network(self, path):
+        checkpoint = os.path.join(path, 'checkpoint')
         if os.path.exists(checkpoint):
-            h5_file = os.path.join(checkpoint, 'network.h5')
-            self.network.load_weights(h5_file)
+            self.network.load_weights(checkpoint)
         else:
             print(f'Checkpoint {checkpoint} not found.')

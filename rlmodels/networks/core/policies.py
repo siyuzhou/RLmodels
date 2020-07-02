@@ -4,13 +4,24 @@ from .modules import MLP
 
 
 class ContinuousDeterministicPolicy(keras.layers.Layer):
-    def __init__(self, units):
+    def __init__(self, action_size, units, bounds=None):
         super().__init__()
 
-        self.policy = MLP(1, units)
+        if bounds is None:
+            self.policy = MLP(action_size, units)
+            self.multiplier = tf.ones(action_size)
+            self.shift = tf.zeros(action_size)
+        else:
+            self.policy = MLP(action_size, units, 'tanh')
+            bounds = tf.constant(bounds)
+            lower, higher = bounds
+            self.shift = tf.reduce_mean(bounds, axis=0)
+            self.multiplier = (higher - lower) / 2
+
+        print(self.multiplier, self.shift)
 
     def call(self, states):
-        return self.policy(states)
+        return self.policy(states) * self.multiplier + self.shift
 
 
 class DiscreteProbablisticPolicy(keras.layers.Layer):

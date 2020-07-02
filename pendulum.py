@@ -12,14 +12,15 @@ CHECKPOINT = 'checkpoint_pendulum'
 def main():
     env_id = "Pendulum-v0"
     env = gym.make(env_id)
-    config = Config(memory_capacity=int(1e5),
-                    action_high=env.action_space.high,
-                    action_low=env.action_space.low)
+    config = Config(memory_capacity=int(1e7),
+                    batch_size=512)
+    action_bounds = (env.action_space.low, env.action_space.high)
 
     agent = rlmodels.DDPGAgent(env.observation_space.shape[0],
                                env.action_space.shape[0],
                                [32, 32],
                                [32, 32],
+                               action_bounds=action_bounds,
                                config=config)
 
     agent.load_network(CHECKPOINT)
@@ -49,7 +50,7 @@ def main():
         all_rewards.append(episode_reward)
 
         print(
-            f'\rEpisode {i} reward: {episode_reward:.2f}.  Average: {np.mean(all_rewards[-200:]):.2f}', end='')
+            f'\rEpisode {i} reward: {episode_reward:.2f}.  Average: {np.mean(all_rewards[-20:]):.2f}', end='')
         sys.stdout.flush()
 
         if (i+1) % 10 == 0:
