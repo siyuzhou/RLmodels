@@ -18,8 +18,6 @@ class ContinuousDeterministicPolicy(keras.layers.Layer):
             self.shift = tf.reduce_mean(bounds, axis=0)
             self.multiplier = (higher - lower) / 2
 
-        print(self.multiplier, self.shift)
-
     def call(self, states):
         return self.policy(states) * self.multiplier + self.shift
 

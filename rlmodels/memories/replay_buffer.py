@@ -29,7 +29,7 @@ class ReplayBuffer(BaseMemory):
 
         states, actions, rewards, next_states, dones = zip(*experiences)
 
-        return states, actions, rewards, next_states, dones
+        return (states, actions, rewards, next_states, dones), None
 
     def update(self, *args, **kwargs):
         pass

@@ -41,8 +41,10 @@ class BaseAgent(abc.ABC):
         self.memory.add((state, action, reward, next_state, done))
 
         if len(self.memory) > self.config.batch_size:
-            experiences = self._sample(self.config.batch_size)
-            self.learn(experiences)
+            experiences, info = self._sample(self.config.batch_size)
+            losses = self.learn(experiences)
+
+        self.memory.update(experiences, info, losses)
 
     def _sample(self, n):
         states, actions, rewards, next_states, dones = self.memory.sample(n)
@@ -62,14 +64,17 @@ class BaseAgent(abc.ABC):
             states = self.encoder(states)
             next_states = self.encoder(next_states)
 
-            loss = self.network.loss(states, actions, rewards,
-                                     next_states, dones, self.config.gamma)
+            losses = self.network.loss(states, actions, rewards,
+                                       next_states, dones, self.config.gamma)
+            sum_loss = tf.reduce_sum(losses)
 
         trainable_variables = self.encoder.trainable_variables + self.network.trainable_variables
-        grads = tape.gradient(loss, trainable_variables)
+        grads = tape.gradient(sum_loss, trainable_variables)
         self.optimizer.apply_gradients(zip(grads, trainable_variables))
 
         self.network.update(self.config)
+
+        return losses.numpy()  # Return loss as numpy array
 
     def save_network(self, path):
         os.makedirs(path, exist_ok=True)

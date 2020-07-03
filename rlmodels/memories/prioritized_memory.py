@@ -140,9 +140,11 @@ class PrioritizedMemory(BaseMemory):
 
         importance_weight /= importance_weight.max()  # Normalization.
 
-        return batch, idxs, importance_weight
+        return batch, (idxs, importance_weight)
 
-    def update(self, idx, error):
+    def update(self, experiences, info, losses):
         """Update the priority of index `idx` only."""
-        p = self._priority(error)
-        self.priority_sumtree.update(idx, p)
+        idxes = info[0]
+        for idx, error in zip(idxes, losses):
+            p = self._priority(error)
+            self.priority_sumtree.update(idx, p)

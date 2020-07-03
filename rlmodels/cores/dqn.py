@@ -15,6 +15,9 @@ class DQN(BaseNetwork):
 
         self.dqn = QFunctionDiscrete(action_size, units)
 
+        self.loss_function = keras.losses.MeanSquaredError(
+            reduction=keras.losses.Reduction.NONE)
+
     @property
     def discrete(self):
         return True
@@ -30,9 +33,7 @@ class DQN(BaseNetwork):
         expected_q = rewards + gamma * q_values_next * (1 - dones)
         expected_q = tf.stop_gradient(expected_q)
 
-        loss = keras.losses.mse(expected_q, q_values)
-
-        return loss
+        return self.loss_function(q_values, expected_q)
 
     def update(self, params):
         pass
@@ -50,6 +51,9 @@ class DoubleDQN(BaseNetwork):
 
         self.target_dqn.trainable = False
 
+        self.loss_function = keras.losses.MeanSquaredError(
+            reduction=keras.losses.Reduction.NONE)
+
     @property
     def discrete(self):
         return True
@@ -64,9 +68,7 @@ class DoubleDQN(BaseNetwork):
         expected_q = rewards + gamma * q_values_next * (1 - dones)
         expected_q = tf.stop_gradient(expected_q)
 
-        loss = keras.losses.mse(expected_q, q_values)
-
-        return loss
+        return self.loss_function(q_values, expected_q)
 
     def update(self, params):
         alpha = params.alpha
@@ -90,6 +92,9 @@ class DuelingDQN(BaseNetwork):
 
         self.target_dqn.trainable = False
 
+        self.loss_function = keras.losses.MeanSquaredError(
+            reduction=keras.losses.Reduction.NONE)
+
     @property
     def discrete(self):
         return True
@@ -104,9 +109,7 @@ class DuelingDQN(BaseNetwork):
         expected_q = rewards + gamma * q_values_next * (1 - dones)
         expected_q = tf.stop_gradient(expected_q)
 
-        loss = keras.losses.mse(expected_q, q_values)
-
-        return loss
+        return self.loss_function(q_values, expected_q)
 
     def update(self, params):
         alpha = params.alpha

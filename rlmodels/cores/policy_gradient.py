@@ -18,6 +18,9 @@ class ActorCritic(BaseNetwork):
         self.actor = DiscreteProbablisticPolicy(action_size, actor_units, logits=True)
         self.critic = QFunctionDiscrete(action_size, critic_units)
 
+        self.critic_loss_function = keras.losses.MeanSquaredError(
+            reduction=keras.losses.Reduction.NONE)
+
     @property
     def discrete(self):
         return True
@@ -41,6 +44,8 @@ class ActorCritic(BaseNetwork):
 
         critic_loss = keras.losses.mse(q_a_values, q_a_targets)
 
+        print(critic_loss.shape, actor_loss.shape)
+        raise
         return actor_loss + ratio * critic_loss
 
     def update(self, params):
@@ -67,6 +72,9 @@ class DeepDeterministicPolicyGradient(BaseNetwork):
         self.actor_target.trainable = False
         self.critic_target.trainable = False
 
+        self.critic_loss_function = keras.losses.MeanSquaredError(
+            reduction=keras.losses.Reduction.NONE)
+
     @property
     def discrete(self):
         return False
@@ -81,11 +89,11 @@ class DeepDeterministicPolicyGradient(BaseNetwork):
         q_values_target = rewards + gamma * tf.stop_gradient(q_values_target_next) * (1 - dones)
 
         q_values = self.critic(states, actions)
-        critic_loss = keras.losses.mse(q_values, q_values_target)
+        critic_loss = self.critic_loss_function(q_values, q_values_target)
 
         # Loss for actor
         actions_pred = self.actor(next_states)
-        actor_loss = -tf.reduce_mean(self.critic(states, actions_pred))
+        actor_loss = -tf.squeeze(self.critic(states, actions_pred), -1)
 
         return actor_loss + ratio * critic_loss
 

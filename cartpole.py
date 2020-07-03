@@ -2,7 +2,6 @@ import os
 import sys
 import gym
 import numpy as np
-import tensorflow as tf
 import rlmodels
 
 
