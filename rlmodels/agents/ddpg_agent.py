@@ -3,7 +3,7 @@ import tensorflow as tf
 from tensorflow import keras
 
 from rlmodels.memories import ReplayBuffer
-from rlmodels.networks import DeepDeterministicPolicyGradient
+from rlmodels.kernel import DeepDeterministicPolicyGradient
 from rlmodels.sampling import Clipping, OUNoise
 
 from .base_agent import BaseAgent

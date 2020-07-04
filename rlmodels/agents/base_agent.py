@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 
-from rlmodels.networks.encoders import NoEncoder
+from rlmodels.kernel.encoders import NoEncoder
 from rlmodels.memories import ReplayBuffer
 from rlmodels.utils import Config
 
@@ -29,7 +29,7 @@ class BaseAgent(abc.ABC):
         self.encoder = encoder if encoder else NoEncoder(state_shape)
         self.optimizer = optimizer if optimizer else keras.optimizers.Adam()
 
-        self.memory = memory if memory else ReplayBuffer(config.memory_capacity)
+        self.memory = memory if memory else ReplayBuffer(self.config.memory_capacity)
 
         self.action_dtype = tf.int32 if self.network.discrete else tf.float32
 
@@ -44,10 +44,10 @@ class BaseAgent(abc.ABC):
             experiences, info = self._sample(self.config.batch_size)
             losses = self.learn(experiences)
 
-        self.memory.update(experiences, info, losses)
+            self.memory.update(experiences, info, losses)
 
     def _sample(self, n):
-        states, actions, rewards, next_states, dones = self.memory.sample(n)
+        (states, actions, rewards, next_states, dones), info = self.memory.sample(n)
 
         states = tf.constant(np.vstack(states), tf.float32)
         actions = tf.constant(np.vstack(actions), self.action_dtype)
@@ -55,7 +55,7 @@ class BaseAgent(abc.ABC):
         next_states = tf.constant(np.vstack(next_states), tf.float32)
         dones = tf.constant(np.vstack(dones), tf.float32)
 
-        return states, actions, rewards, next_states, dones
+        return (states, actions, rewards, next_states, dones), info
 
     def learn(self, experiences):
         states, actions, rewards, next_states, dones = experiences

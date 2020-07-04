@@ -3,11 +3,14 @@ import sys
 import gym
 import numpy as np
 import rlmodels
+from rlmodels.utils import Config
 
 
 def main():
     env_id = "CartPole-v0"
     env = gym.make(env_id)
+
+    config = Config()
 
     dqn_agent = rlmodels.DQNAgent(env.observation_space.shape,
                                   env.action_space.n,

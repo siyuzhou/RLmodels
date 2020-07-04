@@ -1,10 +1,10 @@
 import tensorflow as tf
 from tensorflow import keras
-from .base_network import BaseNetwork
-from .core import DiscreteProbablisticPolicy, QFunctionDiscrete, ContinuousDeterministicPolicy, QFunction
+from .base_model import BaseModel
+from .networks import DiscreteProbablisticPolicy, QFunctionDiscrete, ContinuousDeterministicPolicy, QFunction
 
 
-class ActorCritic(BaseNetwork):
+class ActorCritic(BaseModel):
     """Off-policy version of Actor-Critic model."""
 
     def __init__(self, action_size, actor_units, critic_units=None):
@@ -52,7 +52,7 @@ class ActorCritic(BaseNetwork):
         pass
 
 
-class DeepDeterministicPolicyGradient(BaseNetwork):
+class DeepDeterministicPolicyGradient(BaseModel):
     """Off-policy version of Actor-Critic model."""
 
     def __init__(self, action_size, actor_units, critic_units=None, action_bounds=None):

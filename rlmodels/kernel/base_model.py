@@ -2,7 +2,7 @@ import abc
 from tensorflow import keras
 
 
-class BaseNetwork(abc.ABC, keras.Model):
+class BaseModel(abc.ABC, keras.Model):
     def __init__(self, action_size):
         super().__init__()
         self.action_size = action_size

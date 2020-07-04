@@ -1,10 +1,10 @@
 import tensorflow as tf
 from tensorflow import keras
-from .base_network import BaseNetwork
-from .core import QFunctionDiscrete, QAdvantageFunctionDiscrete
+from .base_model import BaseModel
+from .networks import QFunctionDiscrete, QAdvantageFunctionDiscrete
 
 
-class DQN(BaseNetwork):
+class DQN(BaseModel):
     """Deep Q Network"""
 
     def __init__(self, action_size, units):
@@ -39,7 +39,7 @@ class DQN(BaseNetwork):
         pass
 
 
-class DoubleDQN(BaseNetwork):
+class DoubleDQN(BaseModel):
     def __init__(self, action_size, units):
         if not units:
             raise ValueError("'units' cannot be empty")
@@ -78,7 +78,7 @@ class DoubleDQN(BaseNetwork):
         self.target_dqn.set_weights(new_weights)
 
 
-class DuelingDQN(BaseNetwork):
+class DuelingDQN(BaseModel):
     def __init__(self, action_size, v_units, a_units):
         if not v_units:
             raise ValueError("'v_units' cannot be empty")
