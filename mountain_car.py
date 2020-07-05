@@ -6,7 +6,7 @@ import rlmodels
 
 
 def main():
-    env_id = "CartPole-v0"
+    env_id = "MountainCar-v0"
     env = gym.make(env_id)
 
     dqn_agent = rlmodels.ActorCriticAgent(env.observation_space.shape,
@@ -21,7 +21,7 @@ def main():
 
         done = False
         while not done:
-            env.render()
+            # env.render()
 
             action = dqn_agent.act(state)
             next_state, reward, done, _ = env.step(action)
