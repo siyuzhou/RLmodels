@@ -11,11 +11,12 @@ from rlmodels.utils import Config
 
 class BaseAgent(abc.ABC):
     def __init__(self, state_shape, action_size,
-                 network,
+                 model,
                  encoder=None,
                  optimizer=None,
                  memory=None,
-                 config=None
+                 config=None,
+                 seed=None
                  ):
 
         self.config = config
@@ -25,17 +26,20 @@ class BaseAgent(abc.ABC):
         self.state_shape = state_shape
         self.action_size = action_size
 
-        self.network = network
+        self.model = model
         self.encoder = encoder if encoder else NoEncoder(state_shape)
         self.optimizer = optimizer if optimizer else keras.optimizers.Adam()
 
         self.memory = memory if memory else ReplayBuffer(self.config.memory_capacity)
 
-        self.action_dtype = tf.int32 if self.network.discrete else tf.float32
+        self.action_dtype = tf.int32 if self.model.discrete else tf.float32
 
-    @abc.abstractmethod
     def act(self, state):
-        pass
+        with tf.device('/cpu:0'):
+            state_tensor = tf.expand_dims(tf.constant(state, dtype=tf.float32), 0)
+            outputs = self.model(self.encoder(state_tensor)).numpy().squeeze(0)
+
+        return outputs
 
     def step(self, state, action, reward, next_state, done):
         self.memory.add((state, action, reward, next_state, done))
@@ -64,26 +68,26 @@ class BaseAgent(abc.ABC):
             states = self.encoder(states)
             next_states = self.encoder(next_states)
 
-            losses = self.network.loss(states, actions, rewards,
-                                       next_states, dones, self.config.gamma)
+            losses = self.model.loss(states, actions, rewards,
+                                     next_states, dones, self.config.gamma)
             sum_loss = tf.reduce_sum(losses)
 
-        trainable_variables = self.encoder.trainable_variables + self.network.trainable_variables
+        trainable_variables = self.encoder.trainable_variables + self.model.trainable_variables
         grads = tape.gradient(sum_loss, trainable_variables)
         self.optimizer.apply_gradients(zip(grads, trainable_variables))
 
-        self.network.update(self.config)
+        self.model.update(self.config)
 
         return losses.numpy()  # Return loss as numpy array
 
-    def save_network(self, path):
+    def save_model(self, path):
         os.makedirs(path, exist_ok=True)
         checkpoint = os.path.join(path, 'checkpoint')
-        self.network.save_weights(checkpoint)
+        self.model.save_weights(checkpoint)
 
-    def load_network(self, path):
+    def load_model(self, path):
         checkpoint = os.path.join(path, 'checkpoint')
         if os.path.exists(checkpoint):
-            self.network.load_weights(checkpoint)
+            self.model.load_weights(checkpoint)
         else:
             print(f'Checkpoint {checkpoint} not found.')

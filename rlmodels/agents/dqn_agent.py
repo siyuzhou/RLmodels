@@ -22,22 +22,16 @@ class DQNAgent(BaseAgent):
             raise ValueError('hidden_layers cannot be empty')
 
         super().__init__(state_shape, action_size,
-                         network=DQN(action_size, hidden_units),
+                         model=DQN(action_size, hidden_units),
                          encoder=encoder,
                          memory=memory,
                          config=config)
 
         self.sampling = EpsilonGreedySampling(
-            self.config.epsilon_max, self.config.epsilon_min, self.config.epsilon_decay)
-
-        self.random = np.random.RandomState(seed)
+            self.config.epsilon_max, self.config.epsilon_min, self.config.epsilon_decay, seed)
 
     def act(self, state):
-        with tf.device('/cpu:0'):
-            state_tensor = tf.expand_dims(tf.constant(state, dtype=tf.float32), 0)
-            q_values = self.network(self.encoder(state_tensor))
-            q_values = q_values.numpy().squeeze(0)
-
+        q_values = super().act(state)
         return self.sampling(q_values)
 
 
@@ -53,7 +47,7 @@ class DoubleDQNAgent(DQNAgent):
             raise ValueError('hidden_layers cannot be empty')
 
         BaseAgent.__init__(self, state_shape, action_size,
-                           network=DoubleDQN(action_size, hidden_units),
+                           model=DoubleDQN(action_size, hidden_units),
                            encoder=encoder,
                            memory=memory,
                            config=config)
@@ -63,9 +57,7 @@ class DoubleDQNAgent(DQNAgent):
             self.config = Config()
 
         self.sampling = EpsilonGreedySampling(
-            self.config.epsilon_max, self.config.epsilon_min, self.config.epsilon_decay)
-
-        self.random = np.random.RandomState(seed)
+            self.config.epsilon_max, self.config.epsilon_min, self.config.epsilon_decay, seed)
 
 
 class DuelingDQNAgent(DQNAgent):
@@ -83,7 +75,7 @@ class DuelingDQNAgent(DQNAgent):
             a_units = v_units
 
         BaseAgent.__init__(self, state_shape, action_size,
-                           network=DuelingDQN(action_size, v_units, a_units),
+                           model=DuelingDQN(action_size, v_units, a_units),
                            encoder=encoder,
                            memory=memory)
 
@@ -92,6 +84,4 @@ class DuelingDQNAgent(DQNAgent):
             self.config = Config()
 
         self.sampling = EpsilonGreedySampling(
-            self.config.epsilon_max, self.config.epsilon_min, self.config.epsilon_decay)
-
-        self.random = np.random.RandomState(seed)
+            self.config.epsilon_max, self.config.epsilon_min, self.config.epsilon_decay, seed)

@@ -18,9 +18,6 @@ class ActorCritic(BaseModel):
         self.actor = DiscreteProbablisticPolicy(action_size, actor_units, logits=True)
         self.critic = QFunctionDiscrete(action_size, critic_units)
 
-        self.critic_loss_function = keras.losses.MeanSquaredError(
-            reduction=keras.losses.Reduction.NONE)
-
     @property
     def discrete(self):
         return True
@@ -35,7 +32,7 @@ class ActorCritic(BaseModel):
         q_a_values_no_grad = tf.stop_gradient(q_a_values)
         log_pi_a = tf.gather(tf.math.log_softmax(self.actor(states)), actions, batch_dims=-1)
 
-        actor_loss = -q_a_values_no_grad * log_pi_a  # q_a_actor_values no gradient
+        actor_loss = -tf.squeeze(q_a_values_no_grad * log_pi_a, -1)  # q_a_actor_values no gradient
 
         # Loss for critic
         # Sample next action off-policy with reduce_max
@@ -44,8 +41,6 @@ class ActorCritic(BaseModel):
 
         critic_loss = keras.losses.mse(q_a_values, q_a_targets)
 
-        print(critic_loss.shape, actor_loss.shape)
-        raise
         return actor_loss + ratio * critic_loss
 
     def update(self, params):
@@ -72,9 +67,6 @@ class DeepDeterministicPolicyGradient(BaseModel):
         self.actor_target.trainable = False
         self.critic_target.trainable = False
 
-        self.critic_loss_function = keras.losses.MeanSquaredError(
-            reduction=keras.losses.Reduction.NONE)
-
     @property
     def discrete(self):
         return False
@@ -89,7 +81,7 @@ class DeepDeterministicPolicyGradient(BaseModel):
         q_values_target = rewards + gamma * tf.stop_gradient(q_values_target_next) * (1 - dones)
 
         q_values = self.critic(states, actions)
-        critic_loss = self.critic_loss_function(q_values, q_values_target)
+        critic_loss = keras.losses.mse(q_values, q_values_target)
 
         # Loss for actor
         actions_pred = self.actor(next_states)

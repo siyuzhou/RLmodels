@@ -28,11 +28,11 @@ class DDPGAgent(BaseAgent):
             action_bounds = np.array(action_bounds, dtype=np.float32)
             assert action_bounds.shape[0] == 2
 
-        network = DeepDeterministicPolicyGradient(
+        model = DeepDeterministicPolicyGradient(
             action_size, actor_units, critic_units, action_bounds)
 
         super().__init__(state_shape, action_size,
-                         network=network,
+                         model=model,
                          encoder=encoder,
                          memory=memory,
                          config=config)
@@ -41,10 +41,8 @@ class DDPGAgent(BaseAgent):
         self.noise = OUNoise(action_size, seed)
 
     def act(self, state):
-        with tf.device('/cpu:0'):
-            state_tensor = tf.expand_dims(tf.constant(state, dtype=tf.float32), 0)
-            action = self.network(self.encoder(state_tensor)).numpy().squeeze()
-            action_noise = action + self.noise.sample()
+        action = super().act(state)
+        action_noise = action + self.noise.sample()
 
         clipped_action = self.sampling(action)
         return clipped_action
