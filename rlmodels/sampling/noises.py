@@ -4,7 +4,7 @@ import numpy as np
 class OUNoise:
     """Ornstein-Uhlenbeck process."""
 
-    def __init__(self, size, seed, mu=0., theta=0.15, sigma=0.2):
+    def __init__(self, size, seed=None, mu=0., theta=0.15, sigma=0.2):
         self.mu = mu * np.ones(size)
 
         self.theta = theta
