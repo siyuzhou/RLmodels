@@ -27,9 +27,8 @@ class DiscreteProbablisticPolicy(keras.layers.Layer):
         super().__init__()
 
         self.logits = logits
-        activation = None
-        if not self.logits:
-            activation = 'softmax'
+        activation = None if logits else 'softmax'
+
         self.policy = MLP(action_size, units, activation=activation)
 
     def call(self, states):

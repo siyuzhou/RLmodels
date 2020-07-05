@@ -3,15 +3,23 @@ import sys
 import gym
 import numpy as np
 import rlmodels
+from rlmodels.utils import Config
+from rlmodels.memories import PrioritizedMemory
 
 
 def main():
     env_id = "CartPole-v0"
     env = gym.make(env_id)
 
-    dqn_agent = rlmodels.ActorCriticAgent(env.observation_space.shape,
-                                          env.action_space.n,
-                                          [32, 32])
+    config = Config(memory_capacity=int(1e5),
+                    batch_size=512)
+    memory = PrioritizedMemory(config.memory_capacity)
+
+    dqn_agent = rlmodels.DQNAgent(env.observation_space.shape,
+                                  env.action_space.n,
+                                  [32, 32],
+                                  memory=memory,
+                                  config=config)
 
     all_rewards = []
 

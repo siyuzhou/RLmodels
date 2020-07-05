@@ -93,9 +93,12 @@ class PrioritizedMemory(BaseMemory):
     def _priority(self, error):
         return (error + self.epsilon) ** self.alpha
 
-    def add(self, error, experience):
+    def add(self, experience, error):
         """Add priority and experience to memory."""
-        self.update(self.write_idx, error)
+        error = np.finfo(np.float32).max if error is None else error
+        info = ([self.write_idx], )
+
+        self.update(info, [error])
         self.experiences[self.write_idx] = experience
 
         self.fill = min(self.fill + 1, self.capacity)
@@ -120,12 +123,12 @@ class PrioritizedMemory(BaseMemory):
             s = self.random.uniform(a, b)
             idx, p = self.priority_sumtree.get(s)
             if idx >= self.fill:
-                print('\n')
-                print(idx, self.fill)
-                print(s, self.priority_sumtree.root)
-                print(self.experiences[idx])
+                # print('\n')
+                # print(idx, self.fill)
+                # print(s, self.priority_sumtree.root)
+                # print(self.experiences[idx])
 
-                raise ValueError
+                raise ValueError(f'index {idx} out of bound of memory fill {self.fill}')
 
             idx = min(idx, self.fill - 1)
             experience = self.experiences[idx]
@@ -140,9 +143,9 @@ class PrioritizedMemory(BaseMemory):
 
         importance_weight /= importance_weight.max()  # Normalization.
 
-        return batch, (idxs, importance_weight)
+        return zip(*batch), (idxs, importance_weight)
 
-    def update(self, experiences, info, losses):
+    def update(self, info, losses):
         """Update the priority of index `idx` only."""
         idxes = info[0]
         for idx, error in zip(idxes, losses):

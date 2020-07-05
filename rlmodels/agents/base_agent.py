@@ -19,18 +19,16 @@ class BaseAgent(abc.ABC):
                  seed=None
                  ):
 
-        self.config = config
-        if self.config is None:
-            self.config = Config()
+        self.config = config if config is not None else Config()
 
         self.state_shape = state_shape
         self.action_size = action_size
 
         self.model = model
-        self.encoder = encoder if encoder else NoEncoder(state_shape)
-        self.optimizer = optimizer if optimizer else keras.optimizers.Adam()
+        self.encoder = encoder if encoder is not None else NoEncoder(state_shape)
+        self.optimizer = optimizer if optimizer is not None else keras.optimizers.Adam()
 
-        self.memory = memory if memory else ReplayBuffer(self.config.memory_capacity)
+        self.memory = memory if memory is not None else ReplayBuffer(self.config.memory_capacity)
 
         self.action_dtype = tf.int32 if self.model.discrete else tf.float32
 
@@ -42,16 +40,17 @@ class BaseAgent(abc.ABC):
         return outputs
 
     def step(self, state, action, reward, next_state, done):
-        self.memory.add((state, action, reward, next_state, done))
+        self.memory.add((state, action, reward, next_state, done), None)
 
         if len(self.memory) > self.config.batch_size:
             experiences, info = self._sample(self.config.batch_size)
             losses = self.learn(experiences)
 
-            self.memory.update(experiences, info, losses)
+            self.memory.update(info, losses)
 
     def _sample(self, n):
-        (states, actions, rewards, next_states, dones), info = self.memory.sample(n)
+        experiences, info = self.memory.sample(n)
+        states, actions, rewards, next_states, dones = experiences
 
         states = tf.constant(np.vstack(states), tf.float32)
         actions = tf.constant(np.vstack(actions), self.action_dtype)
@@ -68,17 +67,17 @@ class BaseAgent(abc.ABC):
             states = self.encoder(states)
             next_states = self.encoder(next_states)
 
-            losses = self.model.loss(states, actions, rewards,
-                                     next_states, dones, self.config.gamma)
-            sum_loss = tf.reduce_sum(losses)
+            loss = self.model.loss(states, actions, rewards,
+                                   next_states, dones, self.config.gamma)
+            # sum_loss = tf.reduce_sum(loss)
 
         trainable_variables = self.encoder.trainable_variables + self.model.trainable_variables
-        grads = tape.gradient(sum_loss, trainable_variables)
+        grads = tape.gradient(loss, trainable_variables)
         self.optimizer.apply_gradients(zip(grads, trainable_variables))
 
         self.model.update(self.config)
 
-        return losses.numpy()  # Return loss as numpy array
+        return loss.numpy()  # Return loss as numpy array
 
     def save_model(self, path):
         os.makedirs(path, exist_ok=True)
