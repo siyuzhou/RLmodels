@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
 from .base_model import BaseModel
-from .networks import DiscreteProbablisticPolicy, QFunctionDiscrete, ContinuousDeterministicPolicy, QFunction
+from .networks import DiscreteStochasticPolicy, QFunctionDiscrete, ContinuousDeterministicPolicy, QFunction
 
 
 class ActorCritic(BaseModel):

@@ -22,7 +22,7 @@ class ContinuousDeterministicPolicy(keras.layers.Layer):
         return self.policy(states) * self.multiplier + self.shift
 
 
-class DiscreteProbablisticPolicy(keras.layers.Layer):
+class DiscreteStochasticPolicy(keras.layers.Layer):
     def __init__(self, action_size, units, logits=False):
         super().__init__()
 

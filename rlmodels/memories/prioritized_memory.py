@@ -76,6 +76,7 @@ class PrioritizedMemory(BaseMemory):
     alpha = 0.6
     beta = 0.4
     beta_increment = 0.0001
+    default_error = 1e5
 
     def __init__(self, capacity, seed=None):
         self.priority_sumtree = SumTree(capacity)
@@ -95,7 +96,8 @@ class PrioritizedMemory(BaseMemory):
 
     def add(self, experience, error):
         """Add priority and experience to memory."""
-        error = np.finfo(np.float32).max if error is None else error
+        error = self.default_error if error is None else error
+
         info = ([self.write_idx], )
 
         self.update(info, [error])
@@ -148,6 +150,7 @@ class PrioritizedMemory(BaseMemory):
     def update(self, info, losses):
         """Update the priority of index `idx` only."""
         idxes = info[0]
+
         for idx, error in zip(idxes, losses):
             p = self._priority(error)
             self.priority_sumtree.update(idx, p)
