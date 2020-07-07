@@ -15,7 +15,7 @@ class ReplayBuffer(BaseMemory):
     def __len__(self):
         return len(self.memory)
 
-    def add(self, experience):
+    def add(self, experience, *args, **kwargs):
         """Add a new experience to memory."""
         state, action, reward, next_state, done = experience
         self.memory.append((state, action, reward, next_state, done))

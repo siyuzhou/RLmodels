@@ -15,7 +15,7 @@ class ActorCritic(BaseModel):
 
         super().__init__(action_size)
 
-        self.actor = DiscreteProbablisticPolicy(action_size, actor_units, logits=True)
+        self.actor = DiscreteStochasticPolicy(action_size, actor_units, logits=True)
         self.critic = QFunctionDiscrete(action_size, critic_units)
 
     @property

@@ -66,7 +66,7 @@ class SumTree:
 class PrioritizedMemory(BaseMemory):
     """
     Prioritized memory buffer.
-    # Code borrowed and modified from https://github.com/rlcode/per.
+    Code borrowed and modified from https://github.com/rlcode/per.
     Priority is calculated as:
         p = (e + ϵ)ᵅ, where e is the error, α is a constant exponent, and ϵ is a small
         positive constant. 
@@ -76,7 +76,7 @@ class PrioritizedMemory(BaseMemory):
     alpha = 0.6
     beta = 0.4
     beta_increment = 0.0001
-    default_error = 1e5
+    default_error = 1e2
 
     def __init__(self, capacity, seed=None):
         self.priority_sumtree = SumTree(capacity)
