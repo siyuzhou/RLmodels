@@ -7,7 +7,7 @@ class BaseMemory(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def add(self, experience, info):
+    def add(self, experience):
         pass
 
     @abc.abstractmethod

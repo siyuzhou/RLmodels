@@ -40,9 +40,9 @@ class BaseAgent(abc.ABC):
         return outputs
 
     def step(self, state, action, reward, next_state, done):
-        self.memory.add((state, action, reward, next_state, done), None)
+        self.memory.add((state, action, reward, next_state, done))
 
-        if len(self.memory) > self.config.batch_size:
+        if len(self.memory) >= self.config.batch_size:
             experiences, info = self._sample(self.config.batch_size)
             losses = self.learn(experiences)
 

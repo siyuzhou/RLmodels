@@ -4,7 +4,7 @@ import numpy as np
 from .base_memory import BaseMemory
 
 
-class SumTree:
+class _SumTree:
     """
     Left balanced sum tree.
     # Code borrowed and modified from https://github.com/rlcode/per.
@@ -79,7 +79,7 @@ class PrioritizedMemory(BaseMemory):
     default_error = 1e2
 
     def __init__(self, capacity, seed=None):
-        self.priority_sumtree = SumTree(capacity)
+        self.priority_sumtree = _SumTree(capacity)
         self.experiences = np.zeros(capacity, dtype=object)
 
         self.capacity = capacity
@@ -94,7 +94,7 @@ class PrioritizedMemory(BaseMemory):
     def _priority(self, error):
         return (error + self.epsilon) ** self.alpha
 
-    def add(self, experience, error):
+    def add(self, experience, error=None):
         """Add priority and experience to memory."""
         error = self.default_error if error is None else error
 
