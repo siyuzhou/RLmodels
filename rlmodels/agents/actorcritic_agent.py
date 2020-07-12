@@ -33,9 +33,7 @@ class ActorCriticAgent(BaseAgent):
                          config=config,
                          seed=seed)
 
-        # self.sampling = ProbabilitySampling(seed)
-        self.sampling = EpsilonGreedySampling(
-            self.config.epsilon_max, self.config.epsilon_min, self.config.epsilon_decay, seed)
+        self.sampling = ProbabilitySampling(seed)
 
     def act(self, state):
         action_probs = super().act(state)

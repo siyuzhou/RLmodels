@@ -11,15 +11,10 @@ def main():
     env_id = "CartPole-v0"
     env = gym.make(env_id)
 
-    config = Config(memory_capacity=int(1e5),
-                    batch_size=512)
-    memory = PrioritizedMemory(config.memory_capacity)
-
-    dqn_agent = rlmodels.DQNAgent(env.observation_space.shape,
-                                  env.action_space.n,
-                                  [32, 32],
-                                  memory=memory,
-                                  config=config)
+    dqn_agent = rlmodels.ActorCriticAgent(env.observation_space.shape,
+                                          env.action_space.n,
+                                          [32, 32]
+                                          )
 
     all_rewards = []
 
@@ -53,4 +48,5 @@ def main():
 if __name__ == '__main__':
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
     os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+
     main()
