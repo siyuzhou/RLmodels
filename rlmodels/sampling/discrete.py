@@ -88,3 +88,19 @@ class ProbabilitySampling(BaseSampling):
             values = self._softmax(values, factor, shift)
 
         return self._sample_index(values)
+
+
+class EpsilonProbabilitySampling(ProbabilitySampling, EpsilonGreedySampling):
+    def __init__(self, epsilon_max, epsilon_min, epsilon_decay, seed=None):
+        EpsilonGreedySampling.__init__(self, epsilon_max, epsilon_min, epsilon_decay, seed)
+        ProbabilitySampling.__init__(self, seed)
+
+    def __call__(self, values, logits=True, factor=1., shift=0.):
+        self.update()
+        if self.random.rand() < self.epsilon:
+            return self.random.randint(values.shape[-1])
+
+        if logits:
+            values = self._softmax(values, factor, shift)
+
+        return self._sample_index(values)
