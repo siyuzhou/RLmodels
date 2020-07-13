@@ -24,5 +24,5 @@ class Config:
         for key, value in kwargs.items():
             self.__setattr__(key, value)
 
-        if self.batch_size < self.memory_capacity:
+        if self.batch_size > self.memory_capacity:
             raise ValueError("'memory_capacity' must be greater than 'batch_size'")

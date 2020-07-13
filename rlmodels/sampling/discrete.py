@@ -82,9 +82,9 @@ class ProbabilitySampling(BaseSampling):
 
         return idxs.squeeze()
 
-    def __call__(self, values, logits=False, factor=1., epsilon=0.):
+    def __call__(self, values, logits=True, factor=1., shift=0.):
         if logits:
             # Convert logits to probs
-            values = self._softmax(values, factor, epsilon)
+            values = self._softmax(values, factor, shift)
 
         return self._sample_index(values)

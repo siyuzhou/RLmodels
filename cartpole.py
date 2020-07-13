@@ -11,9 +11,11 @@ def main():
     env_id = "CartPole-v0"
     env = gym.make(env_id)
 
+    config = Config(ratio=10)
     dqn_agent = rlmodels.ActorCriticAgent(env.observation_space.shape,
                                           env.action_space.n,
-                                          [32, 32]
+                                          [32, 32],
+                                          config=config
                                           )
 
     all_rewards = []
