@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
 from .base_model import BaseModel
-from .networks import DiscreteStochasticPolicy, QFunctionDiscrete, ContinuousDeterministicPolicy, QFunction
+from .networks import DiscreteStochasticPolicy, VFunction, ContinuousDeterministicPolicy, QFunction
 
 
 class ActorCritic(BaseModel):
@@ -16,7 +16,7 @@ class ActorCritic(BaseModel):
         super().__init__(action_size)
 
         self.actor = DiscreteStochasticPolicy(action_size, actor_units, logits=True)
-        self.critic = QFunctionDiscrete(action_size, critic_units)
+        self.critic = VFunction(critic_units)
 
     @property
     def discrete(self):
@@ -26,19 +26,18 @@ class ActorCritic(BaseModel):
         return tf.math.softmax(self.actor(states))
 
     def loss(self, states, actions, rewards, next_states, dones, gamma=0.99, ratio=1.):
-        q_a_values = tf.gather(self.critic(states), actions, batch_dims=-1)
+        v_values = self.critic(states)
 
         # Loss for critic
         # Sample next action off-policy with reduce_max
-        q_a_values_next = tf.reduce_max(self.critic(next_states), axis=-1, keepdims=True)
+        v_values_next = self.critic(next_states)
 
-        q_a_targets = rewards + gamma * tf.stop_gradient(q_a_values_next) * (1 - dones)
+        v_values_target = rewards + gamma * tf.stop_gradient(v_values_next) * (1 - dones)
 
-        critic_loss = keras.losses.mse(q_a_values, q_a_targets)
+        critic_loss = keras.losses.mse(v_values, v_values_target)
 
         # Loss for actor
-        q_a_values_no_grad = tf.stop_gradient(q_a_values)
-        td_error = q_a_targets - q_a_values_no_grad
+        td_error = tf.stop_gradient(v_values_target - v_values)
 
         log_pi_a = tf.gather(tf.math.log_softmax(self.actor(states)), actions, batch_dims=-1)
 
