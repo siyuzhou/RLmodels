@@ -19,5 +19,5 @@ class Clipping(BaseSampling):
     def discrete(self):
         return False
 
-    def __call__(self, actions):
-        return np.clip(actions, self.low, self.high)
+    def __call__(self, values):
+        return np.clip(values, self.low, self.high), 1.

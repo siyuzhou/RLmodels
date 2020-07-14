@@ -32,7 +32,7 @@ def main():
         while (not done) and (t < t_max):
             env.render()
 
-            action = agent.act(state)
+            action, prob = agent.act(state)
 
             next_state, reward, done, _ = env.step(action)
             agent.step(state, action, reward, next_state, done)

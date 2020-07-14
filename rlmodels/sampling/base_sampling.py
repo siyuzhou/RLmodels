@@ -10,6 +10,3 @@ class BaseSampling(abc.ABC):
     @abc.abstractmethod
     def __call__(self):
         pass
-
-    # def update(self):
-    #     pass
