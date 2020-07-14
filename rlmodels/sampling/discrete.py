@@ -49,7 +49,7 @@ class EpsilonGreedySampling(BaseSampling):
         action_size = values.size
         max_a = np.argmax(values)
 
-        ps = np.oness(action_size) * self.epsilon / action_size
+        ps = np.ones(action_size) * self.epsilon / action_size
         ps[max_a] += 1 - self.epsilon
 
         a = self.random.choice(action_size, p=ps)
