@@ -40,9 +40,10 @@ class DDPGAgent(BaseAgent):
         self.sampling = Clipping(action_bounds)
         self.noise = OUNoise(action_size, seed)
 
-    def act(self, state):
+    def act(self, state, training=True):
         action = super().act(state)
         action_noise = action + self.noise.sample()
 
-        clipped_action = self.sampling(action)
-        return clipped_action
+        if training:
+            action = self.sampling(action)
+        return action
